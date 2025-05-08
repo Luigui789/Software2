@@ -1,0 +1,28 @@
+# Entorno virtual
+env/
+venv/
+
+# Archivos de Python compilados
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Base de datos SQLite (solo si no deseas versionarla)
+db.sqlite3
+
+# Archivos del entorno de VSCode
+.vscode/
+
+# Archivos temporales del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de migraciones (opcional, si se regeneran siempre)
+*/migrations/__pycache__/
+*/migrations/*.pyc
+
+# Archivos de log y cache
+*.log
+*.pot
+*.mo
+*.cache
