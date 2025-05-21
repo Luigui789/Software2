@@ -1,0 +1,116 @@
+/* Fuente y fondo general */
+body {
+    margin: 0;
+    font-family: 'Space Grotesk', sans-serif;
+    background-color: #1f1f1f;
+    color: #fff;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+/* Barra de navegación */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #1F2528;
+    padding: 1rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    height: 64px;
+    
+}
+
+.navbar a {
+    text-decoration: none;
+    color: #AF8906;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    background-color: #00000050;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.navbar a:hover {
+    background-color: #AF8906;
+    color: #000;
+}
+
+/* Estilo del logo */
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+/* Contenedor del formulario */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 64px);
+    margin-top: 64px;
+
+}
+
+.login-box {
+    background-color: #2b2b2b;
+    padding: 3rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+    text-align: center;
+}
+
+.logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
+
+.logo span {
+    font-size: 1.2rem;
+    display: block;
+}
+
+/* Campos de entrada */
+.input-field {
+    display: block;
+    width: 100%;
+    padding: 0.8rem;
+    margin: 1rem 0;
+    background-color: #3a3a3a;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.login-button {
+    background-color: #ffd700;
+    border: none;
+    padding: 1rem 2rem;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background 0.3s;
+}
+
+.login-button:hover {
+    background-color: #e6c200;
+}
+
+.register-link {
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+.register-link a {
+    color: #ffd700;
+    text-decoration: none;
+}

@@ -1,0 +1,22 @@
+{% extends "Layout.html" %}
+{% load static %}
+{% block title %}Inicio de Sesión{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/Style.css' %}">
+{% endblock %}
+{% block content %}
+<main class="login-container">
+    <div class="login-box">
+        <h1 class="logo">Mojica's <span>Barber Shop</span></h1>
+        <form action="{% url 'login' %}" method="post">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="USUARIO" class="input-field">
+            <input type="password" name="password" placeholder="CONTRASEÑA" class="input-field">
+            <button type="submit" class="login-button">INICIAR SESIÓN</button>
+            {% if error %}
+                <p style="color:red;">{{ error }}</p>
+            {% endif %}
+        </form>
+    </div>
+</main>
+{% endblock %}
