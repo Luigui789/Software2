@@ -1,26 +1,36 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     {% block head %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet"> 
     <link rel="stylesheet" href="{% static 'css/Style.css' %}">
     <title>{% block title %} {% endblock %}</title>
     {% endblock %}
 </head>
+
 <body>
-        <!-- Barra de navegación -->
+    <!-- Barra de navegacion -->
     <nav class="navbar">
         <a href="{% url 'index' %}">INICIO</a>
         <a href="{% url 'Equipo' %}">CONOCE AL EQUIPO</a>
         <a href="{% url 'Quienes_Somos' %}">¿QUIENES SOMOS?</a>
         <a href="{% url 'Contactanos' %}">CONTACTENOS</a>
-        <img src="{% static 'image/logo.jpg' %}" alt="Avatar" class="avatar">
-    
-    {% block content %}{% endblock %}
+        {% if user.is_authenticated %}
+        <a href="{% url 'administracion' %}">ADMINISTRACIÓN</a>
+        {% endif %}
+        {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}">Cerrar sesión</a>
+        {% endif %}
 
-    
+        <img src="{% static 'image/logo.jpg' %}" alt="Avatar" class="avatar">
+
+        {% block content %}{% endblock %}
+    </nav>
+
 </body>
+
 </html>

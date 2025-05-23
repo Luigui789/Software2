@@ -1,15 +1,40 @@
 from django.contrib import admin
 from .models import Persona, Cliente, Servicio, Servicio_Realizado, Barbero, Empleado, Detalle_ServicioRealizado
+from .forms import PersonaCreationForm, PersonaChangeForm
+from django.contrib.auth.admin import UserAdmin
+
 # Register your models here.
 
-class PersonaAdmin(admin.ModelAdmin):
-    list_display = ('nombre1', 'nombre2', 'apellidoP', 'apellidoM', 'telefono', 'username', 'email', 'is_active')
-    search_fields = ('nombre1', 'nombre2', 'apellidoP', 'apellidoM', 'telefono', 'username')
+class PersonaAdmin(UserAdmin):
+    add_form = PersonaCreationForm
+    form = PersonaChangeForm
+    model = Persona
+
+    list_display = ('username', 'email', 'nombre1', 'apellidoP', 'is_staff', 'is_active')
+    list_filter = ('is_staff', 'is_active')
+
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Información personal', {'fields': ('nombre1', 'nombre2', 'apellidoP', 'apellidoM', 'telefono', 'email')}),
+        ('Permisos', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Fechas importantes', {'fields': ('last_login', 'date_joined')}),
+    )
+
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'password1', 'password2', 'email', 'nombre1', 'nombre2', 'apellidoP', 'apellidoM', 'telefono', 'is_active', 'is_staff')}
+        ),
+    )
+
+    search_fields = ('username', 'email')
+    ordering = ('username',)
+
 admin.site.register(Persona, PersonaAdmin)
 
 class EmpleadoAdmin(admin.ModelAdmin):
     list_display = ('cargo', 'Salario', 'fecha_contratacion', 'persona')
-    search_fields = ('cargo', 'Salario', 'fecha_contratacion', 'persona__nombre1', 'persona__apellidoP')
+    search_fields = ('cargo', 'Salario', 'fecha_contratacion', 'persona_nombre1', 'persona_apellidoP')
     list_filter = ('cargo',)
 admin.site.register(Empleado, EmpleadoAdmin)
 
@@ -20,7 +45,7 @@ admin.site.register(Cliente, ClienteAdmin)
 
 class BarberoAdmin(admin.ModelAdmin):
     list_display = ('Direccion', 'cedula', 'Estado', 'Comisiones', 'Empleado')
-    search_fields = ('Direccion', 'cedula', 'Estado', 'Comisiones', 'empleado__persona__nombre1', 'empleado__persona__apellidoP', 'empleado__cargo')
+    search_fields = ('Direccion', 'cedula', 'Estado', 'Comisiones', 'empleado_personanombre1', 'empleadopersonaapellidoP', 'empleado_cargo')
     list_filter = ('Estado',)
 admin.site.register(Barbero, BarberoAdmin)
 
@@ -31,12 +56,12 @@ admin.site.register(Servicio, ServicioAdmin)
 
 class ServicioRealizadoAdmin(admin.ModelAdmin):
     list_display = ('fecha', 'cliente', 'barbero')
-    search_fields = ('fecha', 'cliente__persona__nombre1', 'cliente__persona__apellidoP', 'barbero__persona__nombre1', 'barbero__persona__apellidoP')
+    search_fields = ('fecha', 'cliente_personanombre1', 'clientepersonaapellidoP', 'barberopersonanombre1', 'barberopersona_apellidoP')
     list_filter = ('fecha',)
 admin.site.register(Servicio_Realizado, ServicioRealizadoAdmin)
 
 class DetalleServicioAdmin(admin.ModelAdmin):
     list_display = ('Servicio', 'Servicio_Realizado')
-    search_fields = ('servicio__nombre', 'servicio_realizado__fecha')
+    search_fields = ('servicio_nombre', 'servicio_realizado_fecha')
 
 admin.site.register(Detalle_ServicioRealizado, DetalleServicioAdmin)

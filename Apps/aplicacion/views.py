@@ -1,6 +1,7 @@
 from django.shortcuts import render,redirect
-from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
 from datetime import timedelta
 
 # Create your views here.
@@ -46,6 +47,14 @@ def login(request):
             else:
                 return render(request, 'login.html', {'error': 'Usuario o contraseña incorrectos'})
     return render(request, 'login.html')
+
+def logout_view(request):
+    auth_logout(request)
+    return redirect('login')
+
+@login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+def administracion(request):
+    return render(request, 'Administracion.html')
 
 def equipo(request):
     return render(request, 'Conoce_al_equipo.html')
