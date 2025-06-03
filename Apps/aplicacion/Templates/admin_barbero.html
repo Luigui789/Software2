@@ -1,0 +1,164 @@
+{% extends "Layout2.html" %}
+{% load static %}
+{% block title %} Gestionar Barberos {% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/Style2.css' %}">
+<link rel="stylesheet" href="{% static 'css/AdBarbero.css' %}">
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="container-form Empleado">
+        <div class="information">
+            <div class="info-child">
+                <h1>Agregar Barbero</h1>
+                <p>En esta sección, Puedes agregar la información de nuevos barberos.</p>
+                <div id="errores-barbero"></div>
+            </div>
+        </div>
+        <div class="form-information">
+            <div class="form-information-child">
+                <h2>Datos personales</h2>
+                <div id="errores-barbero"></div>
+                <form action="" method="POST" class="form">
+                    {% csrf_token %}
+                    <label>
+                        <i class='bx bx-rename'></i>
+                        <input type="text" name="primer_nombre" placeholder="Primer Nombre:" required maxlength="15">
+                        <!-- REQUERIED -->
+                    </label>
+                    <label>
+                        <input type="text" name="segundo_nombre" placeholder="Segundo Nombre:" maxlength="15">
+                    </label>
+                    <label>
+                        <i class='bx bxs-rename'></i>
+                        <input type="text" name="primer_Apellido" placeholder="Primer Apellido:" required maxlength="15"><!-- REQUERIED -->
+                    </label>
+                    <label>
+                        <input type="text" name="segundo_Apellido" placeholder="Segundo Apellido:" maxlength="15">
+                    </label>
+                    <label>
+                        <i class='bx bxs-phone'></i>
+                        <input type="text" name="telefono" placeholder="Telefono:" required maxlength="8"><!-- REQUERIED -->
+                    </label>
+                    <label>
+                        <i class='bx bxl-gmail'></i>
+                        <input type="email" name="email" placeholder="Email:" required maxlength="60"><!-- REQUERIED -->
+                    </label>
+                    <label>
+                        <i class='bx bx-user'></i>
+                        <input type="text" name="usuario" placeholder="Usuario:" required maxlength="15"><!-- REQUERIED -->
+                    </label>
+                    <label>
+                        <i class='bx bxs-shield'></i>
+                        <input type="password" name="password" placeholder="Contraseña:" required maxlength="50"><!-- REQUERIED -->
+                    </label>
+                    <input type="button" value="Siguiente" id="Sig_empleado">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-form Save Hide">
+        <div class="information">
+            <div class="info-child">
+                <h1>Ya casi terminas</h1>
+                <p>En esta sección, Tendras que ingresar informacion adicional del barbero.</p>
+                <input type="button" value="Atras" id="Atras_empleado">
+            </div>
+        </div>
+        <div class="form-information">
+            <div class="form-information-child">
+                <h2>Datos Adicionales</h2>
+                <p>Info. adicional</p>
+                <form action="" method="POST" class="form">
+                    {% csrf_token %}
+                    <label>
+                        <i class='bx bxs-package'></i>
+                        <select name="Cargo" id="">
+                            <option value="" disabled selected>Seleccione un cargo</option>
+                            <option value="Administrador">Administrador</option>
+                            <option value="Barbero">Barbero</option>
+                            <option value="Aprendiz">Aprendiz</option>
+                        </select>
+                    </label>
+                    <label>
+                        <i class='bx bxs-wallet'></i>
+                        <input type="number" name="Salario" placeholder="Salario:" step="any">
+                    </label>
+                    <label>
+                        <i class='bx bxs-map'></i>
+                        <input type="text" name="Direccion" placeholder="Direccion:" required>
+                    </label>
+                    <label>
+                        <i class='bx bxs-id-card'></i>
+                        <input type="text" name="Cedula" placeholder="Cedula:">
+                    </label>
+                    <input type="submit" value="Guardar" id="Guardar">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="panel-barberos">
+    <h2>PANEL DE BARBEROS</h2>
+    <div class="preview">VISTA PREVIA</div>
+    <div class="table-section">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Teléfono</th>
+                    <th>Usuario</th>
+                    <th>Cargo</th>
+                    <th>Salario</th>
+                    <th>Comisiones</th>
+                    <th>Cédula</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for barbero in barberos %}
+                <tr>
+                    <td>{{ barbero.id }}</td>
+                    <td>{{ barbero.Empleado.persona.nombre1 }}</td>
+                    <td>{{ barbero.Empleado.persona.apellidoP }}</td>
+                    <td>{{ barbero.Empleado.persona.telefono }}</td>
+                    <td>{{ barbero.Empleado.persona.username }}</td>
+                    <td>{{ barbero.Empleado.cargo }}</td>
+                    <td>{{ barbero.Empleado.Salario }}</td>
+                    <td>{{ barbero.Comisiones}}</td>
+                    <td>{{ barbero.cedula }}</td>
+                    <td >
+                        {% if barbero.Estado %}
+                        <span class="estado-dot estado-activo"></span>
+                        {% else %}
+                        <span class="estado-dot estado-inactivo"></span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form action="{% url 'editar_barbero' barbero.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="edit-btn">Editar</button>
+                        </form>
+                        <form action="{% url 'remover_barbero' barbero.id %}" method="POST" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="delete-btn">Remover</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'JavaScript/Gest_admin.js' %}"></script>
+{% endblock %}

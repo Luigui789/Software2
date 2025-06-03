@@ -1,10 +1,106 @@
 {% extends "Layout.html" %}
 {% load static %}
-{% block title %} Inicio de Sesion {% endblock %}
+{% block title %}Inicio de Sesión{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/Style.css' %}">
-
+<link rel="stylesheet" href="{% static 'css/index.css' %}">
 {% endblock %}
+
 {% block content %}
+<!-- primera parte -->
+<div class="container">
+    <div class="box">
+        <div class="contenido">
+            <img class="imagendegrupo" src="{% static 'image/fotodegrupo.jpg' %}" alt="Equipo Mojica's">
+            <div class="texto-box">
+                <h2>→ MOJICA´S EXPERIENCE</h2>
+                <p>Desde el primer corte hasta el último retoque, con tijera o máquina, clásicos o modernos, te
+                    ofrecemos el
+                    mejor servicio de barbería para que siempre luzcas impecable.</p>
+                <button>SERVICIOS</button>
+                <ul class="menu-links">
+                    <li><a href="#">¿QUIENES SOMOS?</a></li>
+                    <li><a href="#">CONTÁCTENOS</a></li>
+                    <li><a href="#">CONOCE AL EQUIPO</a></li>
+                    <li><a href="#">SERVICIOS BÁSICOS</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Nueva sección: Nuestra Experiencia (segunda parte)-->
+
+<div class="experiencia-container">
+    <div class="experiencia-box">
+        <h2 class="experiencia-titulo">Nuestra Experiencia</h2>
+        <p class="experiencia-desc">
+            En Mojica's Barber Shop, cada corte es más que un simple servicio: es una experiencia de estilo y confianza.
+            Nuestro proceso está diseñado para ofrecerte calidad, precisión y un ambiente único.
+        </p>
+        <div class="experiencia-grid">
+            <div class="experiencia-item">
+                <div class="experiencia-icon">💬</div>
+                <h3>Atención Personalizada</h3>
+                <p>Analizamos tu estilo, tipo de cabello y preferencias para recomendarte el look que mejor te queda.
+                </p>
+            </div>
+            <div class="experiencia-item">
+                <div class="experiencia-icon">✅</div>
+                <h3>Técnicas Profesionales</h3>
+                <p>Nuestros barberos están capacitados en las últimas tendencias y técnicas para garantizar un resultado
+                    impecable.</p>
+            </div>
+            <div class="experiencia-item">
+                <div class="experiencia-icon">🧴</div>
+                <h3>Productos de Alta Calidad</h3>
+                <p>Utilizamos productos premium para el cuidado de tu cabello y barba, asegurando una experiencia de
+                    lujo.</p>
+            </div>
+            <div class="experiencia-item">
+                <div class="experiencia-icon">😊</div>
+                <h3>Satisfacción Garantizada</h3>
+                <p>Nuestra prioridad es que salgas con confianza y estilo. Si no estás 100% satisfecho, ajustamos hasta
+                    que
+                    quedes feliz con tu corte.</p>
+            </div>
+            <div class="experiencia-item">
+                <div class="experiencia-icon">⭐</div>
+                <h3>Siente la Diferencia Mojica’s</h3>
+                <p>No es solo un corte, es una experiencia que te hará destacar. Ven, siéntate y deja que los expertos
+                    hagan su
+                    magia.</p>
+            </div>
+            <div class="experiencia-item">
+                <div class="experiencia-icon">💈</div>
+                <h3>Descubre el Estilo Mojica’s</h3>
+                <p>Más que un look, es el arte de realzar tu esencia. Entra, relájate y déjate transformar por manos
+                    maestras.
+                </p>
+            </div>
+        </div>
+        <p class="experiencia-visitanos">
+            Visítanos y Vive la Experiencia Mojica’s
+        </p>
+    </div>
+</div>
+
+<!-- Sección: Nuestro equipo, tu nuevo estilo (tercera parte) -->
+
+<div class="equipo-section">
+    <div class="equipo-info">
+        <h2>Nuestro equipo, tu nuevo estilo</h2>
+        <p>
+            Conoce al equipo que transforma cortes en estilo y actitud.<br>
+            Talento, pasión y técnica en cada uno de nosotros.<br>
+            ¿Listo para vivir la experiencia?
+        </p>
+        <button class="equipo-btn">CONOCE AL EQUIPO</button>
+    </div>
+    <div class="equipo-fotos">
+        <img src="{% static 'image/fotobarbeando.jpg' %}" alt="Barbería Mojica's" class="equipo-img">
+        <img src="{% static 'image/fotodecorte.png' %}" alt="Barbería Mojica's" class="equipo-img">
+    </div>
+</div>
 
 {% endblock %}

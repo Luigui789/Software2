@@ -1,0 +1,101 @@
+{% extends "Layout2.html" %}
+{% load static %}
+{% block title %} Administrar cliente {% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/AdCliente.css' %}">
+<link rel="stylesheet" href="{% static 'css/Style2.css' %}">
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="container-form Empleado">
+        <div class="information">
+            <div class="info-child">
+                <h2>Agregar Cliente</h2>
+                <p>En esta sección, Puedes agregar la información de nuevos Clientes.</p>
+            </div>
+        </div>
+        <div class="form-information">
+            <div class="form-information-child">
+                <h2>Datos personales</h2>
+                {% if errores %}
+                <ul class="errores">
+                    {% for error in errores %}
+                    <li style="color: red;" >{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                <form action="" method="POST" class="form">
+                    {% csrf_token %}
+                    <label>
+                        <i class='bx bx-rename'></i>
+                        <input type="text" placeholder="Primer Nombre:" name="primer_nombre" maxlength="15" required><!-- REQUERIED -->
+                    </label>
+                    <label>
+                        <input type="text" placeholder="Segundo Nombre:" name="segundo_nombre" maxlength="15">
+                    </label>
+                    <label>
+                        <i class='bx bxs-rename'></i>
+                        <input type="text" placeholder="Primer Apellido:" name="primer_Apellido" required maxlength="15"><!-- REQUERIED -->
+                    </label>
+                    <label>
+                        <input type="text" placeholder="Segundo Apellido:" name="segundo_Apellido" maxlength="15">
+                    </label>
+                    <label>
+                        <i class='bx bxl-instagram-alt'></i>
+                        <input type="text" placeholder="Instagram:" name="instagram" maxlength="15">
+                    </label>
+                    <label>
+                        <i class='bx bxl-gmail'></i>
+                        <input type="email" placeholder="Email:" name="email" maxlength="254">
+                    </label>
+                    <input type="submit" value="Guardar" id="guardar">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-barberos">
+        <h2>Panel De Clientes</h2>
+        <br>
+        <div class="preview">Vista Previa</div>
+        <div class="table-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Primer Nombre</th>
+                        <th>Segundo Nombre</th>
+                        <th>Primer Apellido</th>
+                        <th>Segundo Apellido</th>
+                        <th>Instagram</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cliente in clientes %}
+                    <tr>
+                        <td class="ColorID">{{ cliente.id }}</td>
+                        <td class="CuerpoTd">{{ cliente.nombre1 }}</td>
+                        <td class="CuerpoTd">{{ cliente.nombre2 }}</td>
+                        <td class="CuerpoTd">{{ cliente.apellidoP }}</td>
+                        <td class="CuerpoTd">{{ cliente.apellidoM }}</td>
+                        <td class="CuerpoTd">{{ cliente.instagram }}</td>
+                        <td class="CuerpoTd">
+                            <a href="{% url 'editar_cliente' cliente.id %}"><button class="edit-btn">Editar</button></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <!-- Más filas aquí -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

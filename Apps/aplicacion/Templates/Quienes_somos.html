@@ -1,4 +1,50 @@
 {% extends "Layout.html" %}
+{% load static %}
+{% block title %} Quienes Somos {% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/Style.css' %}">
+<link rel="stylesheet" href="{% static 'css/quienesSomos.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet"> 
+{% endblock %}
+
+
 {% block content %}
-<h1>Quienes_Somos?</h1>
+<div class="Container">
+    <div class="titulo">
+        <br>
+        <br>
+        <h1>¿Quiénes Somos?</h1>
+        <h3>Mojica's Barber Shop</h3>
+    </div>
+
+    <div class="contenedor">
+        <div class="caja">
+            <h2>Misión</h2>
+            <p>Brindar servicios de barbería de alta calidad en un ambiente acogedor, 
+                moderno y profesional, resaltando el estilo y personalidad de cada cliente.</p>
+        </div>
+
+        <div class="caja">
+            <h2>Visión</h2>
+            <p>Ser reconocidos como la barbería líder en nuestra comunidad, destacándonos por 
+                la excelencia en el servicio, la innovación en estilos y la fidelidad de 
+                nuestros clientes.</p>
+        </div>
+
+        <div class="caja">
+            <h2>Valores</h2>
+            <p>Pasión por el estilo.</p>
+            <p>Compromiso con la calidad.</p>
+            <p>Respeto y atención personalizada.</p>
+            <p>Innovación constante.</p>
+            <p>Higiene y seguridad.</p>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+{% block JavaSripts %}
+<Script ></Script>
 {% endblock %}

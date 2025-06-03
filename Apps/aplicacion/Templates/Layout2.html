@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% block head %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/Style.css' %}">
+    <title>{% block title %} {% endblock %}</title>
+    {% endblock %}
+</head>
+
+<body>
+    <!-- Barra de navegacion -->
+    <nav class="navbar">
+        <div class="navbar-logo">
+            <img src="{% static 'image/logo.jpg' %}" alt="Logo" />
+        </div>
+        <input type="checkbox" id="navbar-toggle" class="navbar-toggle">
+        <label for="navbar-toggle" class="navbar-icon">&#9776;</label>
+        <ul class="navbar-links">
+            <li><a href="{% url 'index' %}">INICIO</a></li>
+            <li><a href="{% url 'Equipo' %}">CONOCE AL EQUIPO</a></li>
+            <li><a href="{% url 'Quienes_Somos' %}">¿QUIENES SOMOS?</a></li>
+            <li><a href="{% url 'Contactanos' %}">CONTACTENOS</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'administracion' %}">ADMINISTRACIÓN</a></li>
+            {% endif %}
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'logout' %}">Cerrar sesión</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% block content %}{% endblock %}
+    <!-- foother uwu  -->
+    </div>
+</body>
+{% block scripts %}
+
+{% endblock %}
+</html>

@@ -1,4 +1,81 @@
 {% extends "Layout.html" %}
+{% load static %}
+{% block title %}Inicio de Sesión{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/Style.css' %}">
+<link rel="stylesheet" href="{% static 'css/equipo.css' %}">
+{% endblock %}
+
+<!-- Conoce_al_equipo.html -->
 {% block content %}
-<h1>Página Conoce al Equipo</h1>
+<div class="equipo-header">
+    <h2><span class="equipo-de">EQUIPO DE</span><br>BARBEROS</h2>
+</div>
+
+<div class="barberos-list">
+    <div class="barbero-card">
+        <div class="barbero-info">
+            <span class="barbero-cargo">Hola, yo soy</span>
+            <h3>Lic.Claudio Mojica</h3>
+            <span class="barbero-rol">CEO y fundador</span>
+            <p>
+                Soy Claudio, fundador de esta barbería.<br>
+                Cualquier sugerencia o duda házmela saber.<br>
+                ¡Gracias por confiar en nosotros!
+            </p>
+            <a href="#" class="barbero-btn">Contactanos</a>
+        </div>
+        <div class="barbero-img">
+            <img src="{% static 'image/mojica.png' %}" alt="Claudio Mojica">
+        </div>
+    </div>
+
+    <div class="barbero-card">
+        <div class="barbero-info">
+            <span class="barbero-cargo">Hola, yo soy</span>
+            <h3>Leo</h3>
+            <span class="barbero-rol">Barbero</span>
+            <p>
+                Siempre en busca de nuevos logros y desafíos.<br>
+                Me especializo en cortes modernos y sociales.
+            </p>
+            <a href="#" class="barbero-btn">Contactanos</a>
+        </div>
+        <div class="barbero-img">
+            <img src="{% static 'image/leo.png' %}" alt="Leo">
+        </div>
+    </div>
+
+    <div class="barbero-card">
+        <div class="barbero-info">
+            <span class="barbero-cargo">Hola, yo soy</span>
+            <h3>Maykel</h3>
+            <span class="barbero-rol">Barbero</span>
+            <p>
+                Soy especialista en todo tipo de barbería.<br>
+                Me gusta innovar y dar el mejor servicio a cada cliente.
+            </p>
+            <a href="#" class="barbero-btn">Contactanos</a>
+        </div>
+        <div class="barbero-img">
+            <img src="{% static 'image/maykel.png' %}" alt="Maykel">
+        </div>
+    </div>
+
+    <div class="barbero-card">
+        <div class="barbero-info">
+            <span class="barbero-cargo">Hola, yo soy</span>
+            <h3>Bellaco kuts</h3>
+            <span class="barbero-rol">Barbero</span>
+            <p>
+                Me especializo en cortes urbanos.<br>
+                Siempre dispuesto a dar el mejor resultado.
+            </p>
+            <a href="#" class="barbero-btn">Contactanos</a>
+        </div>
+        <div class="barbero-img">
+            <img src="{% static 'image/bellako.png' %}" alt="Bellaco kuts">
+        </div>
+    </div>
+</div>
 {% endblock %}

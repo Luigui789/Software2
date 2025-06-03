@@ -73,8 +73,8 @@ class Servicio_Realizado(models.Model):
         return f'{self.fecha} {self.cliente} {self.barbero} '
     
 class Detalle_ServicioRealizado(models.Model):
-    Servicio = models.ForeignKey(Servicio, on_delete=models.CASCADE, related_name="Detalle_ServicioRealizado")
-    Servicio_Realizado = models.ForeignKey(Servicio_Realizado,on_delete=models.CASCADE, related_name="Detalle_ServicioRealizado")
+    Servicio = models.ForeignKey(Servicio, on_delete=models.CASCADE, related_name="detalle_ServicioRealizado")
+    Servicio_Realizado = models.ForeignKey(Servicio_Realizado,on_delete=models.CASCADE, related_name="detalle")
 
     def _str_(self):
         return f'{self.Servicio} {self.Servicio_Realizado}'

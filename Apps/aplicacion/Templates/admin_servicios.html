@@ -1,0 +1,106 @@
+{% extends "Layout2.html" %}
+{% load static %}
+{% block title %} Administrar cliente {% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/AdServicio.css' %}">
+<link rel="stylesheet" href="{% static 'css/Style2.css' %}">
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="container-form">
+        <div class="information">
+            <div class="info-child">
+                <h2>Agregar Servicio</h2>
+                <p>En esta sección, Puedes agregar la información de los servicios.</p>
+            </div>
+        </div>
+        <div class="form-information">
+            <div class="form-information-child">
+                <h2>Datos de Servicios</h2>
+                {% if errores %}
+                    <ul class="errores">
+                        {% for error in errores %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                <form action="" method="POST" class="form">
+                    {% csrf_token %}
+                    <label>
+                        <i class='bx bx-rename'></i>
+                        <input type="text" placeholder="Nombre" name="nombre" required maxlength="20">
+                        <!-- REQUERIED -->
+                    </label>
+                    <label>
+                        <i class='bx bx-archive'></i>
+                        <input type="text" placeholder="Tipo" name="tipo" max="20" required>
+                    </label>
+                    <label>
+                        <i class='bx bxs-message-add'></i>
+                        <input type="text" placeholder="Descripcion" name="descripcion" required maxlength="254"><!-- REQUERIED -->
+                    </label>
+                    <label>
+                        <i class='bx bxs-dollar-circle'></i>
+                        <input type="number" placeholder="Precio" name="precio" required step="any" maxlength="4">    
+                    </label>
+                    <input type="submit" value="Guardar" id="guardar">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-barberos">
+        <h2>Panel De Servicios</h2>
+        <br>
+        <div class="preview">Vista Previa</div>
+        <div class="table-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Descripcion</th>
+                        <th>Precio</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for servicio in servicios %}
+                    <tr>
+                        <td class="ColorID">{{ servicio.id }}</td>
+                        <td class="CuerpoTd">{{ servicio.nombre }}</td>
+                        <td class="CuerpoTd">{{ servicio.tipo }}</td>
+                        <td class="CuerpoTd">{{ servicio.descripcion }}</td>
+                        <td class="CuerpoTd">{{ servicio.precio }}</td>
+                        <td class="CuerpoTd">
+                            {% if servicio.estado %}
+                            <span class="estado-dot estado-activo"></span>
+                            {% else %}
+                            <span class="estado-dot estado-inactivo"></span>
+                            {% endif %}
+                        </td>
+                        <td class="CuerpoTd">
+                            <a href="{% url 'editar_servicio' servicio.id %}"><button
+                                    class="edit-btn">Editar</button></a>
+                            <form action="{% url 'remover_servicio' servicio.id %}" method="POST" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="delete-btn">Remover</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <!-- Más filas aquí -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

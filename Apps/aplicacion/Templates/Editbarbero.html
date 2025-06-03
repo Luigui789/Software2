@@ -1,0 +1,101 @@
+{% extends "Layout2.html" %}
+{% load static %}
+{% block title %} Gestionar Barberos {% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/Style2.css' %}">
+<link rel="stylesheet" href="{% static 'css/AdBarbero.css' %}">
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="container-form Empleado">
+        <div class="information">
+            <div class="info-child">
+                <h1>Agregar Barbero</h1>
+                <p>En esta sección, Puedes agregar la información de nuevos barberos.</p>
+            </div>
+        </div>
+        <div class="form-information">
+            <div class="form-information-child">
+                <h2>Datos personales</h2>
+                <form action="" method="POST" class="form">
+                    {% csrf_token %}
+                    <label>
+                        <i class='bx bx-rename'></i>
+                        <input type="text" name="primer_nombre" placeholder="Primer Nombre:" value="{{ barbero.Empleado.persona.nombre1 }}" required>
+                        <!-- REQUERIED -->
+                    </label>
+                    <label>
+                        <input type="text" name="segundo_nombre" placeholder="Segundo Nombre:" value="{{ barbero.Empleado.persona.nombre2 }}">
+                    </label>
+                    <label>
+                        <i class='bx bxs-rename'></i>
+                        <input type="text" name="primer_Apellido" placeholder="Primer Apellido:" value="{{ barbero.Empleado.persona.apellidoP }}" required><!-- REQUERIED -->
+                    </label>
+                    <label>
+                        <input type="text" name="segundo_Apellido" placeholder="Segundo Apellido: " value="{{ barbero.Empleado.persona.apellidoM }}">
+                    </label>
+                    <label>
+                        <i class='bx bxs-phone'></i>
+                        <input type="text" name="telefono" placeholder="Telefono:" value="{{ barbero.Empleado.persona.telefono }}" required><!-- REQUERIED -->
+                    </label>
+                    <label>
+                        <i class='bx bxl-gmail'></i>
+                        <input type="email" name="email" placeholder="Email:" value="{{ barbero.Empleado.persona.email }}" required><!-- REQUERIED -->
+                    </label>
+                    <label>
+                        <i class='bx bx-user'></i>
+                        <input type="text" name="usuario" placeholder="Usuario:" value="{{  barbero.Empleado.persona.username }}" required><!-- REQUERIED -->
+                    </label>
+                    <label>
+                        <i class='bx bxs-shield'></i> 
+                        <input type="password" name="password" placeholder="Contraseña:" value="{{ barbero.Empleado.persona.password }}" required><!-- REQUERIED -->
+                    </label>
+                    <input type="button" value="Siguiente" id="Sig_empleado">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-form Save Hide">
+        <div class="information">
+            <div class="info-child">
+                <h1>Ya casi terminas</h1>
+                <p>En esta sección, Tendras que ingresar informacion adicional del barbero.</p>
+                <input type="button" value="Atras" id="Atras_empleado">
+            </div>
+        </div>
+        <div class="form-information">
+            <div class="form-information-child">
+                <h2>Datos Adicionales</h2>
+                <p>Info. adicional</p>
+                <form action="" method="POST" class="form">
+                    {% csrf_token %}
+                    <label>
+                        <i class='bx bxs-wallet'></i>
+                        <input type="number" name="Salario" placeholder="Salario:" value="{{ barbero.Empleado.Salario }}" step="any">
+                    </label>
+                    <label>
+                        <i class='bx bxs-map'></i>
+                        <input type="text" name="Direccion" placeholder="Direccion:" value="{{ barbero.Direccion }}" required>
+                    </label>
+                    <label>
+                        <i class='bx bxs-id-card'></i>
+                        <input type="text" name="Cedula" placeholder="Cedula:" value="{{ barbero.cedula }}" required>
+                    </label>
+                    <input type="submit" value="Guardar" id="Guardar">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'JavaScript/EditBarbero.js' %}"></script>
+<script>
+    const barberoId = "{{ barbero.id }}";
+</script>
+{% endblock %}

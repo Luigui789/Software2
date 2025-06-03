@@ -1,52 +1,55 @@
-{% extends "Layout.html" %}
+{% extends "Layout2.html" %}
 {% load static %}
 {% block title %}Panel de administracion {% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{% static 'css/Style.css' %}"> 
+<link rel="stylesheet" href="{% static 'css/Style2.css' %}"> 
 <link rel="stylesheet" href="{% static 'css/administracion.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet"> 
 {% endblock %}
 
 {% block content %}
 <main class="main">
     <aside class="sidebar">
         <h2>PANEL DE CONTROL</h2>
-        <button>AGREGAR BARBERO</button>
-        <button>AGREGAR CLIENTE</button>
-        <button>AGREGAR SERVICIO</button>
-        <button>AGREGAR VER SERVICIOS REALIZADO</button>
+        <a href="{% url 'AdBarbero' %}"><button>GESTIONAR BARBERO </button></a>
+        <!-- <button>Gestionar Barbero </button> -->
+        <a href="{% url 'AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>
+        <a href="{% url 'AdServicio' %}"><button>GESTIONAR SERVICIO</button></a>
+        <a href=" {% url 'AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
     </aside>
 
     <section class="content">
-        <h1>PANEL DE ADMINISTRADOR</h1>
+        <h1>PANEL DE ADMINISTRACION</h1>
         <div class="preview">
             <h3>VISTA PREVIA</h3>
             <!-- Aquí podrías cargar contenido dinámico -->
         </div>
 
-        <div class="table-section">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID Detalle</th>
-                        <th>Nombre del Cliente</th>
-                        <th>Nombre del Barbero</th>
-                        <th>Servicios Realizados</th>
-                        <th>Precio Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Registros de ejemplo -->
-                    <tr>
-                        <td>1</td>
-                        <td>Juan Pérez</td>
-                        <td>Carlos</td>
-                        <td>Corte, Barba</td>
-                        <td>$25.00</td>
-                    </tr>
-                    <!-- Agrega más registros aquí -->
-                </tbody>
-            </table>
-        </div>
+            <div class="table-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Detalle</th>
+                            <th>Cliente</th>
+                            <th>Barbero</th>
+                            <th>Servicios Realizados</th>
+                            <th>Precio Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Registros de ejemplo -->
+                        <tr>
+                            <td>1</td>
+                            <td>Juan Pérez</td>
+                            <td>Pedro López</td>
+                            <td>Corte de cabello, Afeitado</td>
+                            <td>$50.00</td>
+                        </tr>
+                        
+                        <!-- Agrega más registros aquí -->
+                    </tbody>
+                </table>
+            </div>
     </section>
 </main>
 

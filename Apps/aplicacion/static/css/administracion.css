@@ -1,95 +1,88 @@
-* {
-    margin: 5px;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    background-color: #5a3d3d;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #d1a310;
-}
-
 
 .main {
     display: flex;
-    background-color: #1e1e1e;
-    margin-top: 40px;
-    padding: 20px;
-    border-radius: 8px;
+    gap: 2rem;
+    margin: 2rem;
+    flex-wrap: wrap;
 }
-
 .sidebar {
-    flex: 1;
-    padding: 20px;
-    background-color: #2c2c2c;
-    border-radius: 8px;
+    background: #B3B1A9;
+    padding: 1rem;
+    border-radius: 10px;
+    min-width: 250px;
+    flex: 1 1 250px;
+    max-width: 300px;
 }
-
 .sidebar h2 {
-    margin-bottom: 20px;
-    font-size: 18px;
+    color: #40270E;
+    margin-bottom: 1rem;
 }
-
 .sidebar button {
-    display: block;
     width: 100%;
-    margin-bottom: 15px;
-    padding: 10px;
-    background-color: #a17900;
-    color: #000;
-    font-weight: bold;
+    margin-bottom: 1rem;
+    background: #AE7435;
+    color: #222;
     border: none;
-    border-radius: 4px;
+    padding: 0.8rem;
+    border-radius: 5px;
+    font-weight: bold;
     cursor: pointer;
+    transition: background 0.2s;
 }
-
 .sidebar button:hover {
-    background-color: #c29800;
+    background: #d38f46;
 }
 
 .content {
-    flex: 3;
-    padding: 20px;
+    background: #978870;
+    padding: 1rem;
+    border-radius: 10px;
+    flex: 3 1 400px;
+    min-width: 300px;
+    color: #40270E;
 }
-
-.content h1 {
-    font-size: 24px;
-    margin-bottom: 15px;
-}
-
 .preview {
-    background-color: #2c2c2c;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 30px;
+    background:#B3B1A9;;
+    padding: 0.2rem;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+}
+.table-section {
+    overflow-x: auto;
+    
 }
 
-.preview h3 {
-    margin-bottom: 10px;
-}
-
-.table-section table {
+table {
     width: 100%;
     border-collapse: collapse;
-    background-color: #2c2c2c;
-    color: #fff;
-    border-radius: 8px;
-    overflow: hidden;
+    margin-top: 1rem;
+    
 }
-
-.table-section th,
-.table-section td {
-    padding: 10px;
+th, td {
+    padding: 0.7rem;
     text-align: left;
-    border-bottom: 1px solid #444;
+    
+}
+th {
+    
+    color: #40270E;
+    background-color: #978870;
+}
+td {
+    
+    color: #fff;
+    background-color: #4b2f14;
+    border-radius: 2px;
 }
 
-.table-section th {
-    background-color: #a17900;
-    color: #000;
-}
-
-.table-section tr:hover {
-    background-color: #3c3c3c;
+/* Responsive para panel */
+@media (max-width: 450px) {
+    .main {
+        flex-direction: column;
+        margin: 1rem;
+    }
+    .sidebar, .content {
+        max-width: 100%;
+        min-width: 0;
+    }
 }

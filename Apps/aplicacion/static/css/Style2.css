@@ -1,0 +1,91 @@
+/* ======== ESTILOS GENERALES ======== */
+body {
+    background-color: #b3b1a9;
+    font-family: 'Space Grotesk', sans-serif;
+    background: url("/static/image/background.png") center center no-repeat fixed;
+    background-size: 400px;
+    /* O usa 'contain' para ajustarse al viewport */
+    background-color: #cdcac1;
+    background-blend-mode: normal;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+
+
+}
+
+/* ======== NAVBAR ======== */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #835527;
+    /* Rojo fuerte */
+    padding: 0.5rem 1rem;
+    position: relative;
+    border-radius: 5px;
+}
+
+.navbar-logo img {
+    height: 40px;
+}
+
+.navbar-links {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar-links li {
+    margin: 0 0.5rem;
+}
+
+.navbar-links a {
+    color: #ffff;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    transition: background 0.2s;
+}
+
+.navbar-links a:hover {
+    background: #513518;
+}
+
+.navbar-toggle,
+.navbar-icon {
+    display: none;
+}
+
+/* ======== NAVBAR RESPONSIVE ======== */
+@media (max-width: 800px) {
+    .navbar-links {
+        flex-direction: column;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        right: 0;
+        background: #835527;
+        /* Mantener rojo fuerte también en móvil */
+        display: none;
+    }
+
+    .navbar-links li {
+        margin: 1rem 0;
+        text-align: center;
+    }
+
+    .navbar-toggle:checked+.navbar-icon+.navbar-links {
+        display: flex;
+    }
+
+    .navbar-icon {
+        display: block;
+        font-size: 2rem;
+        color: #513518;
+        cursor: pointer;
+        margin-left: auto;
+    }
+}

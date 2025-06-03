@@ -1,0 +1,77 @@
+{% extends "Layout2.html" %}
+{% load static %}
+{% block title %} Administrar cliente {% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/AdCliente.css' %}">
+<link rel="stylesheet" href="{% static 'css/Style2.css' %}">
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="container-form Empleado">
+        <div class="information">
+            <div class="info-child">
+                <h2>Agregar Servicios Realizados</h2>
+                <p>En esta sección, Puedes agregar los servicios realizados.</p>
+
+            </div>
+        </div>
+        <div class="form-information">
+            <div class="form-information-child">
+                <h2>Datos del Servicio</h2>
+                <form action="" method="POST" class="form">
+                    {% csrf_token %}
+                    <label>
+                        <i class='bx bxs-calendar'></i>
+                        <input type="date" name="Fecha" required value="{{ datos.Fecha|default:servicio_realizado.fecha|date:'Y-m-d' }}">
+                    </label>
+                    <label>
+                        <i class='bx bx-rename'></i>
+                        <select name="Cliente" required>
+                            <option value="">Seleccione un cliente</option>
+                            {% for cliente in clientes %}
+                            <option value="{{ cliente.id }}"
+                                {% if datos.Cliente|default:servicio_realizado.cliente.id|stringformat:"s" == cliente.id|stringformat:"s" %}
+                                    selected
+                                {% endif %}
+                            >{{ cliente.nombre1 }} {{ cliente.apellidoP }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>
+                        <i class='bx bxs-rename'></i>
+                        <select name="Barbero" required>
+                            <option value="">Seleccione un barbero</option>
+                            {% for barbero in barberos %}
+                            <option value="{{ barbero.id }}"
+                                {% if datos.Barbero|default:servicio_realizado.barbero.id|stringformat:"s" == barbero.id|stringformat:"s" %}
+                                    selected
+                                {% endif %}
+                            >{{ barbero.Empleado.persona.nombre1 }} {{ barbero.Empleado.persona.apellidoP }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>
+                    <select name="Servicio" multiple required>
+                        <option value="">Seleccione uno o más servicios</option>
+                        {% for servicio in servicios %}
+                        <option value="{{ servicio.id }}"
+                            {% if servicio.id in servicios_seleccionados or servicio.id|stringformat:"s" in servicios_seleccionados %}
+                                selected
+                            {% endif %}
+                        >{{ servicio.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    </label>
+                    <input type="submit" value="Guardar" id="guardar">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
