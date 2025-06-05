@@ -1,25 +1,32 @@
 /* Contenedor del formulario */
+.logo{
+    color: antiquewhite;
+}
 .login-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: calc(100vh - 64px);
-    margin-top: 64px;
-
+    height: 100vh;           /* Ocupa toda la altura de la ventana */
+    margin-top: 0;           /* Elimina el margen superior extra */
+    /* padding: 5px 0;         Espacio extra arriba y abajo */
 }
 
 .login-box {
-    background-color: #2b2b2b;
-    padding: 3rem;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+    background-color: rgba(84, 54, 25, 0.9);
+    padding: 4rem 3rem;         /* Más espacio interno */
+    border-radius: 20px;        /* Más redondeado */
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.7); /* Sombra más grande */
     text-align: center;
+    min-width: 370px;           /* Más ancho mínimo */
+    min-height: 340px;          /* Más alto mínimo */
+    width: 100%;
+    max-width: 370px;           /* Más ancho máximo */
 }
 
 .logo {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 2rem;
+    font-size: 3rem;
     margin-bottom: 2rem;
 }
 
@@ -34,27 +41,28 @@
     width: 100%;
     padding: 0.8rem;
     margin: 1rem 0;
-    background-color: #3a3a3a;
+    background-color: #B3B1A9;
     border: none;
     border-radius: 8px;
-    color: white;
+    color: #40270e;
     font-weight: bold;
     font-family: 'Space Grotesk', sans-serif;
 }
 
 .login-button {
-    background-color: #ffd700;
+    background-color: #c7b495;
+    color: #40270E;
     border: none;
     padding: 1rem 2rem;
     font-weight: bold;
     border-radius: 10px;
     cursor: pointer;
-    margin-top: 1rem;
+    margin-top: 2rem;
     transition: background 0.3s;
 }
 
 .login-button:hover {
-    background-color: #e6c200;
+    background-color: #978870;
 }
 
 .register-link {
@@ -64,5 +72,5 @@
 
 .register-link a {
     color: #ffd700;
-    text-decoration: none;
+    text-decoration: none;
 }

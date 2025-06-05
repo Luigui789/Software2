@@ -1,0 +1,119 @@
+/* Centrar tabla en la página */
+h1 {
+    text-align: center;
+    color: #40270E;
+    font-family: 'Space grotesk', sans-serif;
+    margin-bottom: 20px;
+}
+table {
+    width: 90%; /* o el ancho que prefieras */
+    margin: 0 auto; /* centro horizontal */
+    border-collapse: separate;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #40270E;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    text-align: center; /* texto centrado dentro de la tabla */
+}
+
+/* Encabezados centrados */
+th {
+    background-color: #B3B1A9;
+    color: #40270E;
+    font-weight: 700;
+    padding: 14px 20px;
+    user-select: none;
+    text-align: center; /* centrado */
+}
+
+/* Celdas centradas */
+td {
+    background-color: #835527;
+    color: #fff;
+    padding: 14px 20px;
+    vertical-align: middle;
+    text-align: center; /* centrado */
+}
+
+
+/* Otros estilos mantienen igual */
+
+tbody tr:nth-child(even) td {
+    background-color: #7a4d1d;
+}
+
+tbody tr:hover td {
+    background-color: #9e754a;
+    color: #fff;
+    transition: background-color 0.3s ease;
+}
+
+/* Scroll horizontal responsivo */
+.table-section {
+    overflow-x: auto;
+}
+
+/* Responsive */
+@media screen and (max-width: 750px) {
+    table {
+        font-size: 0.85rem;
+    }
+    th, td {
+        padding: 10px 12px;
+    }
+}
+
+/* Contenedor del filtro */
+.filtro-form {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    background-color: #f9f9f9;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Etiquetas del filtro */
+.filtro-form label {
+    font-weight: 600;
+    font-size: 1.1em;
+    color: #333;
+}
+
+/* Select y inputs */
+.filtro-form select,
+.filtro-form input[type="date"] {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.filtro-form select:hover,
+.filtro-form input[type="date"]:hover,
+.filtro-form select:focus,
+.filtro-form input[type="date"]:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 6px #007bff;
+}
+
+/* Botón filtrar */
+.filtro-form button {
+    padding: 8px 20px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.filtro-form button:hover {
+    background-color: #0056b3;
+}

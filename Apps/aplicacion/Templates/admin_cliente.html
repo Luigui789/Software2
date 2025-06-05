@@ -15,17 +15,18 @@
             <div class="info-child">
                 <h2>Agregar Cliente</h2>
                 <p>En esta sección, Puedes agregar la información de nuevos Clientes.</p>
+                    {% for error in errores %}
+                    <ul class="errores"></ul>
+                    <li style="color: red;" >{{ error }}</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
         <div class="form-information">
             <div class="form-information-child">
                 <h2>Datos personales</h2>
                 {% if errores %}
-                <ul class="errores">
-                    {% for error in errores %}
-                    <li style="color: red;" >{{ error }}</li>
-                    {% endfor %}
-                </ul>
+
                 {% endif %}
 
                 <form action="" method="POST" class="form">

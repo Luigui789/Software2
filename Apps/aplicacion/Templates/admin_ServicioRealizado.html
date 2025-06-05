@@ -95,16 +95,16 @@
                                 {{ detalle.Servicio.nombre }}{% if not forloop.last %}, {% endif %}
                             {% endfor %}
                         </td>
-                        <td class="CuerpoTd">
-                            <form action="{% url 'editar_servicio_realizado' realizado.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="edit-btn">Editar</button>
+                        <td>     
+                            <form action="{% url 'editar_servicioRealizado' realizado.barbero.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="edit-btn">Editar</button>
                             </form>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5">No hay servicios realizados.</td>
+                        <td colspan="6">No hay servicios realizados.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

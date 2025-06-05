@@ -76,11 +76,11 @@
                     {% csrf_token %}
                     <label>
                         <i class='bx bxs-package'></i>
-                        <select name="Cargo" id="">
+                        <select name="Rol" id="">
                             <option value="" disabled selected>Seleccione un cargo</option>
-                            <option value="Administrador">Administrador</option>
-                            <option value="Barbero">Barbero</option>
-                            <option value="Aprendiz">Aprendiz</option>
+                            {% for rol in roles %}
+                                <option value="{{ rol.nombre }}">{{ rol.nombre }}</option>
+                            {% endfor %}
                         </select>
                     </label>
                     <label>
@@ -130,7 +130,7 @@
                     <td>{{ barbero.Empleado.persona.apellidoP }}</td>
                     <td>{{ barbero.Empleado.persona.telefono }}</td>
                     <td>{{ barbero.Empleado.persona.username }}</td>
-                    <td>{{ barbero.Empleado.cargo }}</td>
+                    <td>{{ barbero.Empleado.persona.rol.nombre }}</td>
                     <td>{{ barbero.Empleado.Salario }}</td>
                     <td>{{ barbero.Comisiones}}</td>
                     <td>{{ barbero.cedula }}</td>

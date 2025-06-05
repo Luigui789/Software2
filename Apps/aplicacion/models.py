@@ -8,12 +8,20 @@ from django.contrib.auth.hashers import make_password
 
 from django.contrib.auth.hashers import make_password
 
+class Rol(models.Model):
+    nombre = models.CharField(max_length=30, unique=True)
+    descripcion = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.nombre
+
 class Persona(AbstractUser):
     nombre1 = models.CharField(max_length=15, blank=False)
     nombre2 = models.CharField(max_length=15, blank=True)
     apellidoP = models.CharField(max_length=15, blank=False)
     apellidoM = models.CharField(max_length=15, blank=True)
     telefono = models.CharField(max_length=15, blank=False)
+    rol = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True)
 
     # def save(self, *args, **kwargs):
     #     # Solo hashear si no está hasheada ya
@@ -22,16 +30,17 @@ class Persona(AbstractUser):
     #     super().save(*args, **kwargs)
     
     def _str_(self):
-        return f'{self.nombre1} {self.nombre2} {self.apellidoP} {self.apellidoM} {self.telefono}  {self.username} {self.is_active} {self.email}'
+        return f'{self.nombre1} {self.nombre2} {self.apellidoP} {self.apellidoM} {self.telefono} {self.rol}  {self.username} {self.is_active} {self.email}'
+
 
 class Empleado(models.Model):
-    cargo = models.CharField(max_length=15)
+    persona = models.ForeignKey(Persona, on_delete=models.CASCADE, related_name='empleados')
     Salario = models.DecimalField(max_digits=10, decimal_places=2)
     fecha_contratacion = models.DateField(default=timezone.now)
-    persona = models.ForeignKey(Persona, on_delete=models.CASCADE, related_name='empleados')
+
 
     def _str_(self):
-        return f'{self.cargo} {self.Salario} {self.fecha_contratacion} {self.persona}'
+        return f'{self.rol} {self.Salario} {self.fecha_contratacion} {self.persona}'
     
 class Cliente(models.Model):
     nombre1 = models.CharField(max_length=15,blank=False)

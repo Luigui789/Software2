@@ -19,10 +19,9 @@
                     mejor servicio de barbería para que siempre luzcas impecable.</p>
                 <button>SERVICIOS</button>
                 <ul class="menu-links">
-                    <li><a href="#">¿QUIENES SOMOS?</a></li>
-                    <li><a href="#">CONTÁCTENOS</a></li>
-                    <li><a href="#">CONOCE AL EQUIPO</a></li>
-                    <li><a href="#">SERVICIOS BÁSICOS</a></li>
+                    <li><a href="{% url 'Quienes_Somos' %}">¿QUIENES SOMOS?</a></li>
+                    <li><a href="{% url 'Contactanos' %}">CONTÁCTENOS</a></li>
+                    <li><a href="{% url 'Equipo' %}">CONOCE AL EQUIPO</a></li>
                 </ul>
             </div>
         </div>
@@ -95,7 +94,8 @@
             Talento, pasión y técnica en cada uno de nosotros.<br>
             ¿Listo para vivir la experiencia?
         </p>
-        <button class="equipo-btn">CONOCE AL EQUIPO</button>
+        <a href="{% url 'Equipo' %}"><button class="equipo-btn">CONOCE AL EQUIPO</button></a>
+        
     </div>
     <div class="equipo-fotos">
         <img src="{% static 'image/fotobarbeando.jpg' %}" alt="Barbería Mojica's" class="equipo-img">

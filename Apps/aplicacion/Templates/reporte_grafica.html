@@ -1,0 +1,44 @@
+{% extends "Layout2.html" %}
+{% load static %}
+{% block title %}Reporte Graficas{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/Style2.css' %}">
+<link rel="stylesheet" href="{% static 'css/Grafica.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<form method="get" class="filtro-form">
+    <label for="filtro">Filtrar por:</label>
+
+    <select name="filtro" id="filtro" onchange="this.form.submit()">
+        <option value="" {% if not filtro %}selected{% endif %}>-- Todos --</option>
+        <option value="hoy" {% if filtro == 'hoy' %}selected{% endif %}>Hoy</option>
+        <option value="semana" {% if filtro == 'semana' %}selected{% endif %}>Esta semana</option>
+        <option value="mes" {% if filtro == 'mes' %}selected{% endif %}>Este mes</option>
+        <option value="rango" {% if filtro == 'rango' %}selected{% endif %}>Rango personalizado</option>
+    </select>
+
+    {% if filtro == 'rango' %}
+        <label for="inicio">Desde:</label>
+        <input type="date" name="inicio" value="{{ inicio }}">
+
+        <label for="fin">Hasta:</label>
+        <input type="date" name="fin" value="{{ fin }}">
+
+        <button type="submit">Filtrar</button>
+    {% endif %}
+</form>
+<h1>Cortes realizados por Barbero</h1>
+
+<div class="chart-container">
+    {{ labels|json_script:"labels-data" }}
+    {{ data|json_script:"data-data" }}
+    <canvas id="barberoChart" width="600" height="400"></canvas>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'JavaScript/Graficas.js' %}"></script>
+{% endblock %}

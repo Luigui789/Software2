@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'Apps.aplicacion',
+    'axes',
 ]
 
 MIDDLEWARE = [
@@ -48,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'Software2.urls'
@@ -124,3 +126,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'aplicacion.Persona'
 
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesBackend',   # <- usa este primero
+    'django.contrib.auth.backends.ModelBackend',
+]
+AXES_FAILURE_LIMIT = 5  # número máximo de intentos antes del bloqueo
+AXES_COOLOFF_TIME = 1  # en horas (ej: 1 hora de bloqueo)
+AXES_LOCKOUT_TEMPLATE = 'login_bloqueado.html'  # plantilla personalizada para bloqueo
+AXES_ONLY_USER_FAILURES = False  # también bloquea por IP

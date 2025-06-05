@@ -1,21 +1,22 @@
 from django.contrib import admin
-from .models import Persona, Cliente, Servicio, Servicio_Realizado, Barbero, Empleado, Detalle_ServicioRealizado
+from .models import Persona, Cliente, Servicio, Servicio_Realizado, Barbero, Empleado, Detalle_ServicioRealizado, Rol
 from .forms import PersonaCreationForm, PersonaChangeForm
 from django.contrib.auth.admin import UserAdmin
+from axes.models import AccessAttempt, AccessLog
+
 
 # Register your models here.
-
 class PersonaAdmin(UserAdmin):
     add_form = PersonaCreationForm
     form = PersonaChangeForm
     model = Persona
 
-    list_display = ('username', 'email', 'nombre1', 'apellidoP', 'is_staff', 'is_active')
+    list_display = ('username', 'email', 'nombre1', 'apellidoP', 'rol' , 'is_staff', 'is_active')
     list_filter = ('is_staff', 'is_active')
 
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        ('Información personal', {'fields': ('nombre1', 'nombre2', 'apellidoP', 'apellidoM', 'telefono', 'email')}),
+        ('Información personal', {'fields': ('nombre1', 'nombre2', 'apellidoP', 'apellidoM', 'telefono', 'rol' , 'email')}),
         ('Permisos', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Fechas importantes', {'fields': ('last_login', 'date_joined')}),
     )
@@ -27,15 +28,14 @@ class PersonaAdmin(UserAdmin):
         ),
     )
 
-    search_fields = ('username', 'email')
+    search_fields = ('username','rol' , 'email')
     ordering = ('username',)
 
 admin.site.register(Persona, PersonaAdmin)
 
 class EmpleadoAdmin(admin.ModelAdmin):
-    list_display = ('cargo', 'Salario', 'fecha_contratacion', 'persona')
-    search_fields = ('cargo', 'Salario', 'fecha_contratacion', 'persona_nombre1', 'persona_apellidoP')
-    list_filter = ('cargo',)
+    list_display = ('Salario', 'fecha_contratacion', 'persona')
+    search_fields = ( 'Salario', 'fecha_contratacion', 'persona_nombre1', 'persona_apellidoP')
 admin.site.register(Empleado, EmpleadoAdmin)
 
 class ClienteAdmin(admin.ModelAdmin):
@@ -64,4 +64,12 @@ class DetalleServicioAdmin(admin.ModelAdmin):
     list_display = ('Servicio', 'Servicio_Realizado')
     search_fields = ('servicio_nombre', 'servicio_realizado_fecha')
 
+
 admin.site.register(Detalle_ServicioRealizado, DetalleServicioAdmin)
+
+class RolAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'descripcion')
+    search_fields = ('nombre',)
+    ordering = ('nombre',)
+
+admin.site.register(Rol, RolAdmin)

@@ -2,21 +2,40 @@
 {% load static %}
 {% block title %}Panel de administracion {% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{% static 'css/Style2.css' %}"> 
+<link rel="stylesheet" href="{% static 'css/Style2.css' %}">
 <link rel="stylesheet" href="{% static 'css/administracion.css' %}">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet"> 
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
 <main class="main">
-    <aside class="sidebar">
-        <h2>PANEL DE CONTROL</h2>
+<aside class="sidebar">
+    <h2>PANEL DE CONTROL</h2>
+    {% if request.user.is_superuser %}
         <a href="{% url 'AdBarbero' %}"><button>GESTIONAR BARBERO </button></a>
-        <!-- <button>Gestionar Barbero </button> -->
         <a href="{% url 'AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>
         <a href="{% url 'AdServicio' %}"><button>GESTIONAR SERVICIO</button></a>
-        <a href=" {% url 'AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
-    </aside>
+        <a href="{% url 'AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
+        <a href="{% url 'reporte_servicios' %}" target="_blank"><button>GENERAR REPORTE</button></a>
+        <a href="{% url 'reporte_graficas' %}"><button> GRAFICAS</button></a>
+    {% elif request.user.rol.nombre == 'Administrador' %}
+        <a href="{% url 'AdBarbero' %}"><button>GESTIONAR BARBERO </button></a>
+        <a href="{% url 'AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>
+        <a href="{% url 'AdServicio' %}"><button>GESTIONAR SERVICIO</button></a>
+        <a href="{% url 'AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
+        <a href="{% url 'reporte_servicios' %}" target="_blank"><button>GENERAR REPORTE</button></a>
+        <a href="{% url 'reporte_graficas' %}"><button> GRAFICAS</button></a>
+    {% elif request.user.rol.nombre == 'Barbero' %}
+        <a href="{% url 'AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>
+        <a href="{% url 'AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
+        <a href="{% url 'reporte_servicios' %}" target="_blank"><button>GENERAR REPORTE</button></a>
+        <a href="{% url 'reporte_graficas' %}"><button> GRAFICAS</button></a>
+    {% elif request.user.rol.nombre == 'Aprendiz' %}
+        <a href="{% url 'reporte_servicios' %}" target="_blank"><button>GENERAR REPORTE</button></a>
+        <a href="{% url 'reporte_graficas' %}"><button> GRAFICAS</button></a>
+        <!-- Solo panel de administración, puedes dejar vacío o mostrar solo el título -->
+    {% endif %}
+</aside>
 
     <section class="content">
         <h1>PANEL DE ADMINISTRACION</h1>
@@ -25,31 +44,40 @@
             <!-- Aquí podrías cargar contenido dinámico -->
         </div>
 
-            <div class="table-section">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID Detalle</th>
-                            <th>Cliente</th>
-                            <th>Barbero</th>
-                            <th>Servicios Realizados</th>
-                            <th>Precio Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Registros de ejemplo -->
-                        <tr>
-                            <td>1</td>
-                            <td>Juan Pérez</td>
-                            <td>Pedro López</td>
-                            <td>Corte de cabello, Afeitado</td>
-                            <td>$50.00</td>
-                        </tr>
-                        
-                        <!-- Agrega más registros aquí -->
-                    </tbody>
-                </table>
-            </div>
+        <div class="table-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Id_Detalle</th>
+                        <th>Cliente</th>
+                        <th>Barbero</th>
+                        <th>Servicios Realizados</th>
+                        <th>Precio Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for realizado in ultimos_servicios %}
+                    <tr>
+                        <td>{{ realizado.id }}</td>
+                        <td>{{ realizado.cliente.nombre1 }} {{ realizado.cliente.apellidoP }}</td>
+                        <td>{{ realizado.barbero.Empleado.persona.nombre1 }} {{ realizado.barbero.Empleado.persona.apellidoP }}</td>
+                        <td>
+                            {% for detalle in realizado.detalle.all %}
+                            {{ detalle.Servicio.nombre }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            ${{ realizado.precio_total|floatformat:2 }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No hay servicios realizados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </section>
 </main>
 

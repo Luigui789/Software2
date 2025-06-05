@@ -22,10 +22,10 @@ btnAtras.addEventListener("click", e => {
 // Al guardar el segundo form, muestra los datos de ambos forms
 formSave.addEventListener('submit', event => {
     event.preventDefault();
-    console.log("Holas")
     const datosSegundoForm = Object.fromEntries(new FormData(formSave));
     // Combina ambos objetos
     const datosCompletos = { ...datosPrimerForm, ...datosSegundoForm };
+    console.log(datosCompletos);
     
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
@@ -40,11 +40,11 @@ formSave.addEventListener('submit', event => {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'ok') {
-            window.location.href = "/AdBarbero/"; // Cambia la URL si tu ruta es diferente
+            window.location.href = "/AdBarbero/";
         } else {
-            alert('Error al guardar');
+            alert(data.msg || 'Error al guardar');
         }
-})
+    })
     .catch(error => {
         alert('Error al guardar');
         console.error(error);

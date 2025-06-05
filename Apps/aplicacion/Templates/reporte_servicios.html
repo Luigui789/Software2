@@ -1,0 +1,83 @@
+{% extends "Layout2.html" %}
+{% load static %}
+{% block title %} Reporte de Servicios Realizados {% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/Style2.css' %}">
+<link rel="stylesheet" href="{% static 'css/Reporte.css' %}">
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+{% endblock %}
+{% block content %}
+
+<form method="get" class="filtro-form">
+    <label for="filtro">Filtrar por:</label>
+
+    <select name="filtro" id="filtro" onchange="this.form.submit()">
+        <option value="" {% if not filtro %}selected{% endif %}>-- Todos --</option>
+        <option value="hoy" {% if filtro == 'hoy' %}selected{% endif %}>Hoy</option>
+        <option value="semana" {% if filtro == 'semana' %}selected{% endif %}>Esta semana</option>
+        <option value="mes" {% if filtro == 'mes' %}selected{% endif %}>Este mes</option>
+        <option value="rango" {% if filtro == 'rango' %}selected{% endif %}>Rango personalizado</option>
+    </select>
+
+    {% if filtro == 'rango' %}
+        <label for="inicio">Desde:</label>
+        <input type="date" name="inicio" value="{{ inicio }}">
+
+        <label for="fin">Hasta:</label>
+        <input type="date" name="fin" value="{{ fin }}">
+
+        <button type="submit">Filtrar</button>
+    {% endif %}
+</form>
+
+<h1>Reporte de Servicios Realizados</h1>
+<div style="text-align: center; margin-top: 10px;">
+    <a href="{% url 'descargar_reporte_pdf' %}?filtro={{ filtro }}{% if inicio %}&inicio={{ inicio }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}" target="_blank">
+    <button>📄 Descargar PDF</button>
+    </a>
+
+    <a href="{% url 'descargar_reporte_excel' %}?filtro={{ filtro }}{% if inicio %}&inicio={{ inicio }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}" target="_blank">
+        <button>📊 Descargar Excel</button>
+    </a>
+
+</div>
+<br>
+<br>
+
+
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Barbero</th>
+            <th>Servicios</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for servicio in servicios %}
+        <tr>
+            <td>{{ servicio.id }}</td>
+            <td>{{ servicio.fecha }}</td>
+            <td>{{ servicio.cliente.nombre1 }} {{ servicio.cliente.apellidoP }}</td>
+            <td>{{ servicio.barbero.Empleado.persona.nombre1 }} {{ servicio.barbero.Empleado.persona.apellidoP }}</td>
+            <td>
+                {% for detalle in servicio.detalle.all %}
+                {{ detalle.Servicio.nombre }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+            <td>${{ servicio.precio_total }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No hay servicios realizados</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
