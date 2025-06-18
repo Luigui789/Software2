@@ -3,32 +3,29 @@ import openpyxl
 import os
 
 from django.conf import settings
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.hashers import make_password
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from datetime import timedelta, date, datetime
-from .models import Persona, Empleado, Barbero
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from .models import Persona, Empleado, Barbero, Cliente, Servicio, Servicio_Realizado, Detalle_ServicioRealizado,Rol
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt # ¡Importante: Considera eliminar esto en producción!
+from django.http import JsonResponse,HttpResponse
+from .models import Persona, Empleado, Barbero, BarberQueue, Cliente, Servicio, Servicio_Realizado, Detalle_ServicioRealizado,Rol
 from decimal import Decimal
 from functools import wraps
-from django.http import HttpResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from openpyxl.utils import get_column_letter
-from django.db.models import Count
+from django.db.models import Count, ObjectDoesNotExist
 from twilio.rest import Client
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 
-
-
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 # Create your views here.
 
 def rol_requerido(roles_permitidos):
@@ -131,6 +128,7 @@ def quienes(request):
 def contacto(request):
     return render(request, 'Contactanos.html')
 
+login_required(login_url='login')  # Redirige a 'login' si no está autenticado
 @rol_requerido(['Administrador'])
 def AdminBarbero(request):
     if request.method == 'POST':
@@ -232,7 +230,8 @@ def AdminBarbero(request):
     })
 
 
-
+login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+@rol_requerido(['Administrador'])   
 def Removerbarbero(request, barbero_id):
     if request.method == 'POST':
         barbero = get_object_or_404(Barbero, id=barbero_id)
@@ -313,7 +312,7 @@ def EditarBarbero(request, barbero_id):
             persona.email = data['email']
             persona.username = data['usuario']
             # Solo encripta si la contraseña cambió
-            persona.password = data['password']
+            password=make_password(data['password']),
 
             persona.save()
 
@@ -333,6 +332,7 @@ def EditarBarbero(request, barbero_id):
     roles = Rol.objects.all()
     return render(request, 'Editbarbero.html', {'barbero': barbero, 'roles': roles})
 
+login_required(login_url='login')  # Redirige a 'login' si no está autenticado
 @rol_requerido(['Administrador', 'Barbero'])
 def AdminCliente(request):
     errores = []
@@ -394,6 +394,8 @@ def AdminCliente(request):
     clientes = Cliente.objects.all().order_by('-id')[:10]
     return render(request, 'Admin_Cliente.html', {'clientes': clientes})
 
+login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+@rol_requerido(['Administrador', 'Barbero'])
 def EditarCliente(request, cliente_id):
     cliente = get_object_or_404(Cliente, id=cliente_id)
     errores = []
@@ -449,6 +451,8 @@ def EditarCliente(request, cliente_id):
         return redirect('AdCliente')
     return render(request, 'EditCliente.html', {'cliente': cliente})
 
+
+login_required(login_url='login')  # Redirige a 'login' si no está autenticado
 @rol_requerido(['Administrador'])
 def AdminServicio(request):
     errores = []
@@ -506,7 +510,8 @@ def AdminServicio(request):
     servicios = Servicio.objects.filter(estado=True)
     return render(request, 'admin_servicios.html', {'servicios': servicios})
 
-
+login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+@rol_requerido(['Administrador'])
 def EditarServicio(request, servicio_id):
     servicio = get_object_or_404(Servicio, id=servicio_id)
     errores = []
@@ -551,6 +556,8 @@ def EditarServicio(request, servicio_id):
         return redirect('AdServicio')
     return render(request, 'EditServicio.html', {'servicio': servicio})
 
+login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+@rol_requerido(['Administrador'])
 def Removerservicio(request, servicio_id):
     servicio = get_object_or_404(Servicio, id=servicio_id)
     if request.method == 'POST':
@@ -558,6 +565,7 @@ def Removerservicio(request, servicio_id):
         servicio.save()
     return redirect('AdServicio')
 
+login_required(login_url='login')  # Redirige a 'login' si no está autenticado
 @rol_requerido(['Administrador', 'Barbero'])
 def AdminServicioRealizado(request):
     clientes = Cliente.objects.all()
@@ -699,6 +707,8 @@ def filtrar_servicios_por_fecha(request):
 
     return servicios
 
+login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+@rol_requerido(['Administrador', 'Barbero', 'Aprendiz'])
 def reporte_servicios(request):
     filtro = request.GET.get('filtro')
     servicios = Servicio_Realizado.objects.select_related(
@@ -764,7 +774,8 @@ def reporte_servicios(request):
     }
     return render(request, 'reporte_servicios.html', context)
 
-
+login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+@rol_requerido(['Administrador', 'Barbero', 'Aprendiz'])
 def descargar_reporte_pdf(request):
     filtro = request.GET.get('filtro')
     servicios = Servicio_Realizado.objects.select_related(
@@ -803,6 +814,8 @@ def descargar_reporte_pdf(request):
     pisa.CreatePDF(html, dest=response)
     return response
 
+login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+@rol_requerido(['Administrador', 'Barbero', 'Aprendiz'])
 def descargar_reporte_excel(request):
     servicios = filtrar_servicios_por_fecha(request)
 
@@ -840,6 +853,8 @@ def descargar_reporte_excel(request):
     wb.save(response)
     return response
 
+login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+@rol_requerido(['Administrador', 'Barbero', 'Aprendiz'])
 def reporte_grafica(request):
     filtro = request.GET.get('filtro')
     servicios = Servicio_Realizado.objects.prefetch_related('detalle__Servicio', 'barbero__Empleado__persona')
@@ -980,26 +995,22 @@ def subir_a_drive_y_obtener_url(path, nombre):
     Sube un archivo a Google Drive, asegura el Content-Type para Twilio
     y obtiene su URL de descarga pública.
     """
-    print("\n--- INICIO: Función subir_a_drive_y_obtener_url ---") 
-    
     client_secrets_file_path = settings.BASE_DIR / 'Apps' / 'aplicacion' / 'client_secrets.json'
-    creds_file_path = settings.BASE_DIR / 'mycreds.txt' 
-
-    print(f"Ruta esperada de client_secrets.json: {client_secrets_file_path}") 
-    print(f"Ruta esperada de mycreds.txt: {creds_file_path}") 
+    creds_file_path = settings.BASE_DIR / 'mycreds.txt'
 
     gauth = GoogleAuth()
     gauth.settings['client_config_file'] = str(client_secrets_file_path)
-    gauth.settings['save_credentials_file'] = str(creds_file_path)
 
-    try:
-        gauth.LoadCredentials() 
-        print("Credenciales de Google Drive cargadas desde 'mycreds.txt'.")
-    except Exception as e:
-        print(f"No se pudieron cargar las credenciales guardadas (quizás no existen o están corruptas): {e}")
-        print("Realizando autenticación web... Esto abrirá una ventana del navegador.")
-        gauth.LocalWebserverAuth() 
-        print("Autenticación web completada y credenciales guardadas.")
+    gauth.LoadCredentialsFile(str(creds_file_path))
+    if gauth.credentials is None:
+        gauth.LocalWebserverAuth()
+        gauth.SaveCredentialsFile(str(creds_file_path))
+    elif gauth.access_token_expired:
+        gauth.Refresh()
+        gauth.SaveCredentialsFile(str(creds_file_path))
+    else:
+        gauth.Authorize()
+        gauth.SaveCredentialsFile(str(creds_file_path))
 
     drive = GoogleDrive(gauth)
 
@@ -1011,30 +1022,30 @@ def subir_a_drive_y_obtener_url(path, nombre):
     gfile = drive.CreateFile(file_metadata)
     gfile.SetContentFile(path)
     gfile.Upload()
-    print(f"Archivo '{nombre}' subido a Google Drive. ID: {gfile['id']}")
+    # print(f"Archivo '{nombre}' subido a Google Drive. ID: {gfile['id']}")
 
     gfile.InsertPermission({
         'type': 'anyone',
         'value': 'reader',
         'role': 'reader'
     })
-    print("Permisos de compartir configurados a 'cualquiera con el enlace puede leer'.")
+    # print("Permisos de compartir configurados a 'cualquiera con el enlace puede leer'.")
 
     # --- Segundo cambio clave: Obtener URL de exportación explícitamente ---
     # Esta es la forma más fiable de obtener un enlace de descarga con el Content-Type correcto.
     try:
         url_descarga = gfile.GetDownloadUrl(mimetype=mime_type_excel)
-        print(f"URL de descarga (exportación XLSX): {url_descarga}")
+        # print(f"URL de descarga (exportación XLSX): {url_descarga}")
     except Exception as e:
-        print(f"Error al obtener URL de exportación XLSX: {e}. Volviendo a webContentLink/direct download.")
+        # print(f"Error al obtener URL de exportación XLSX: {e}. Volviendo a webContentLink/direct download.")
         # Fallback si GetDownloadUrl falla, aunque es menos probable que funcione con Twilio
         url_descarga = gfile.get('webContentLink')
         if not url_descarga:
             url_descarga = f"https://drive.google.com/uc?id={gfile['id']}&export=download"
-        print(f"URL de descarga fallback: {url_descarga}")
+        # print(f"URL de descarga fallback: {url_descarga}")
 
-    print(f"URL final del archivo para Twilio: {url_descarga}")
-    print("--- FIN: Función subir_a_drive_y_obtener_url ---\n")
+    # print(f"URL final del archivo para Twilio: {url_descarga}")
+    # print("--- FIN: Función subir_a_drive_y_obtener_url ---\n")
     return url_descarga
 
 
@@ -1051,7 +1062,7 @@ def enviar_link_whatsapp(numero, url_drive_del_reporte, nombre_reporte): # Renom
             to=f'whatsapp:{numero}', 
             body=f'Aquí tienes el reporte de Excel de Mojica\'s Barbershop ({nombre_reporte}): {url_drive_del_reporte}', 
         )
-        print(f"Mensaje de WhatsApp enviado. SID: {message.sid}")
+        # print(f"Mensaje de WhatsApp enviado. SID: {message.sid}")
         return message.sid
     except Exception as e:
         print(f"Error al enviar el mensaje de WhatsApp: {e}")
@@ -1104,8 +1115,6 @@ def enviar_reporte_excel_whatsapp(request):
 
         # --- ETAPA 3: Enviar ENLACE por WhatsApp ---
         try:
-            # Llamada a la función que envía el ENLACE (¡no el adjunto!)
-            # Pasa el nombre del archivo para que aparezca en el cuerpo del mensaje
             sid = enviar_link_whatsapp(numero, url_drive, filename) 
             messages.success(request, f'Enlace del reporte enviado exitosamente a WhatsApp. SID: {sid}')
         except Exception as e:
@@ -1121,3 +1130,212 @@ def enviar_reporte_excel_whatsapp(request):
                 print(f"Advertencia: No se pudo eliminar el archivo local '{file_path}': {e}")
 
     return redirect('reporte_servicios')
+
+#============================================================================================================================
+# Contador de turnos con WebSocket
+#============================================================================================================================
+@login_required
+@rol_requerido(['Administrador', 'Barbero', 'Aprendiz'])
+def queue_dashboard(request):
+    # Obtener todos los barberos y su número de cola actual
+    barberos = Barbero.objects.filter(Estado=True).select_related('Empleado__persona')
+
+    queue_data = []
+    for barbero in barberos:
+        current_number = 0
+        try:
+            # Obtener el objeto BarberQueue relacionado con este barbero
+            queue_obj = BarberQueue.objects.get(barbero=barbero)
+            current_number = queue_obj.current_number
+        except BarberQueue.DoesNotExist:
+            # Si no hay una cola creada para este barbero, se inicializa en 0
+            # (El método get_or_create_queue_for_barber en el consumer lo crearía al conectar)
+            current_number = 0
+            print(f"DEBUG: No se encontró BarberQueue para barbero ID {barbero.id}. Usando 0 como valor inicial.")
+        except Exception as e:
+            print(f"ERROR: Fallo al obtener la cola para barbero ID {barbero.id}: {e}")
+            current_number = 0 # En caso de cualquier otro error al obtener la cola
+
+        # Construir el nombre del barbero navegando a través de Empleado y Persona
+        # Asegúrate de que barbero.Empleado.persona exista para cada barbero
+        barber_name = "Nombre Desconocido"
+        try:
+            barber_name = f"{barbero.Empleado.persona.nombre1} {barbero.Empleado.persona.apellidoP}"
+        except ObjectDoesNotExist:
+            print(f"ADVERTENCIA: Barbero ID {barbero.id} no tiene un Empleado/Persona asociado.")
+        except AttributeError:
+            print(f"ADVERTENCIA: Problema al acceder a Empleado/Persona del Barbero ID {barbero.id}. Asegura tus relaciones.")
+
+
+        queue_data.append({
+            'barber_id': barbero.id,
+            'barber_name': barber_name,
+            'current_number': current_number,
+        })
+
+    user = request.user
+
+    # --- Lógica para verificar el rol del usuario actual ---
+    user_rol_name = None
+    if user.is_authenticated:
+        try:
+            # Intentar acceder al nombre del rol del usuario
+            if hasattr(user, 'rol') and user.rol:
+                user_rol_name = user.rol.nombre
+        except ObjectDoesNotExist:
+            # Esto puede ocurrir si el campo rol es ForeignKey y el objeto Rol no existe
+            print(f"ADVERTENCIA: El usuario '{user.username}' (ID: {user.id}) tiene un rol que no existe en la base de datos.")
+            user_rol_name = None # Resetea a None si el objeto Rol no es válido
+        except AttributeError:
+            # Esto puede ocurrir si el modelo Persona no tiene un campo 'rol' o está mal configurado
+            print(f"ERROR: El modelo Persona no tiene un atributo 'rol' o está mal configurado para el usuario '{user.username}'.")
+            user_rol_name = None
+
+    user_is_admin = (user.is_superuser or user_rol_name == 'Administrador')
+    user_is_barbero = (user_rol_name == 'Barbero')
+    user_is_aprendiz = (user_rol_name == 'Aprendiz')
+
+    # La bandera final para controlar la visibilidad de los botones
+    can_see_buttons = user_is_admin or user_is_barbero or user_is_aprendiz
+
+    context = {
+        'queue_data': queue_data,
+        'can_see_buttons': can_see_buttons, # <-- Esta es la variable clave para tu template
+        'user_is_admin': user_is_admin,       # Opcional: para control más granular en el template
+        'user_is_barbero': user_is_barbero,   # Opcional
+        'user_is_aprendiz': user_is_aprendiz, # Opcional
+    }
+
+    # Asegúrate de que 'aplicacion/queue_dashboard.html' es la ruta correcta a tu template
+    return render(request, 'queue_dashboard.html', context)
+
+# --- Nueva vista para incrementar el número de cola ---
+@require_POST
+@login_required # Esta vista es solo para usuarios logueados (barberos/admins)
+@rol_requerido(['Administrador', 'Barbero', 'Aprendiz']) # Solo barberos y admins pueden usarla
+def increment_served_queue(request): # Renombrada
+    """
+    Vista HTTP para que el barbero incremente el número de cola que está atendiendo.
+    """
+    try:
+        data = json.loads(request.body)
+        barber_id = data.get('barber_id')
+
+        if not barber_id:
+            return JsonResponse({'success': False, 'message': 'barber_id es requerido'}, status=400)
+
+        barbero = Barbero.objects.get(id=barber_id)
+        queue_obj = BarberQueue.get_or_create_queue_for_barber(barbero)
+        
+        # Usa el nuevo método para incrementar el número de atendidos
+        new_served_number = queue_obj.increment_served_number() 
+
+        # Notificar a los clientes a través de WebSocket
+        channel_layer = get_channel_layer()
+        room_group_name = f'queue_{barber_id}'
+        async_to_sync(channel_layer.group_send)(
+            room_group_name,
+            {
+                'type': 'queue_update',
+                'barber_id': barber_id,
+                'number': new_served_number, # El número actual siendo atendido
+                'last_issued_number': queue_obj.last_issued_number # También envía el último emitido
+            }
+        )
+
+        return JsonResponse({'success': True, 'new_number': new_served_number})
+
+    except Barbero.DoesNotExist:
+        return JsonResponse({'success': False, 'message': f'Barbero con ID {barber_id} no encontrado.'}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'JSON inválido en el cuerpo de la solicitud.'}, status=400)
+    except Exception as e:
+        print(f"Error en increment_served_queue: {e}")
+        return JsonResponse({'success': False, 'message': f'Error interno del servidor: {str(e)}'}, status=500)
+
+def customer_queue_select(request):
+    """
+    Vista para que los clientes seleccionen un barbero y obtengan un turno.
+    No requiere autenticación (@login_required), es una vista pública.
+    """
+    barberos_data = []
+    # Solo mostrar barberos que estén marcados como 'Estado=True' (activos/disponibles)
+    barberos = Barbero.objects.filter(Estado=True).order_by('id') 
+
+    for barbero in barberos:
+        barber_name = f"{barbero.Empleado.persona.nombre1} {barbero.Empleado.persona.apellidoP}"
+        
+        # Obtener el estado actual de la cola para mostrarlo al cliente
+        current_number = 0
+        last_issued_number = 0
+        try:
+            queue_obj = BarberQueue.objects.get(barbero=barbero)
+            current_number = queue_obj.current_number
+            last_issued_number = queue_obj.last_issued_number
+        except BarberQueue.DoesNotExist:
+            # Si no hay una cola para este barbero aún, se asume 0
+            pass 
+
+        barberos_data.append({
+            'barber_id': barbero.id,
+            'barber_name': barber_name,
+            'current_number': current_number,       # Número actual siendo atendido
+            'last_issued_number': last_issued_number # Último número de ticket emitido
+        })
+
+    context = {
+        'barberos_data': barberos_data,
+    }
+    # Renderiza un template nuevo y específico para el cliente
+    return render(request, 'customer_queue_select.html', context)
+
+
+@require_POST # Solo permite peticiones POST
+# No lleva @login_required porque es para clientes no autenticados
+# CONSIDERACIÓN DE SEGURIDAD: CSRF (ver más abajo)
+def issue_customer_ticket(request):
+    """
+    Vista HTTP para asignar un nuevo número de turno (ticket) a un cliente.
+    """
+    try:
+        data = json.loads(request.body)
+        barber_id = data.get('barber_id')
+
+        if not barber_id:
+            return JsonResponse({'success': False, 'message': 'barber_id es requerido'}, status=400)
+
+        barbero = Barbero.objects.get(id=barber_id)
+        queue_obj = BarberQueue.get_or_create_queue_for_barber(barbero)
+        
+        # Emite un nuevo número de ticket usando el método del modelo
+        assigned_ticket_number = queue_obj.issue_new_ticket()
+
+        # Notifica a través de WebSocket (para actualizar el dashboard de barberos y otros clientes)
+        channel_layer = get_channel_layer()
+        room_group_name = f'queue_{barber_id}'
+        async_to_sync(channel_layer.group_send)(
+            room_group_name,
+            {
+                'type': 'queue_update',
+                'barber_id': barber_id,
+                'number': queue_obj.current_number,        # El número actual que el barbero atiende (no cambia con esto)
+                'last_issued_number': assigned_ticket_number # El nuevo último número emitido
+            }
+        )
+
+        # Devuelve la información al cliente que hizo la petición
+        return JsonResponse({
+            'success': True,
+            'assigned_number': assigned_ticket_number,
+            'current_number_for_barber': queue_obj.current_number, # El número que el barbero está atendiendo
+            'barber_name': f"{barbero.Empleado.persona.nombre1} {barbero.Empleado.persona.apellidoP}"
+        })
+
+    except Barbero.DoesNotExist:
+        return JsonResponse({'success': False, 'message': f'Barbero con ID {barber_id} no encontrado.'}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'JSON inválido en el cuerpo de la solicitud.'}, status=400)
+    except Exception as e:
+        print(f"Error en issue_customer_ticket: {e}")
+        return JsonResponse({'success': False, 'message': f'Error interno del servidor: {str(e)}'}, status=500)
+    

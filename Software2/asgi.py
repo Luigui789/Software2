@@ -8,9 +8,23 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
 """
 
 import os
-
+import django
 from django.core.asgi import get_asgi_application
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
 
+# 🔧 Configura e inicializa Django ANTES de importar rutas
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Software2.settings')
+django.setup()
 
-application = get_asgi_application()
+# ✅ Ahora sí puedes importar rutas u otras cosas que usan modelos
+import Apps.aplicacion.routing
+
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),
+    "websocket": AuthMiddlewareStack(
+        URLRouter(
+            Apps.aplicacion.routing.websocket_urlpatterns
+        )
+    ),
+})

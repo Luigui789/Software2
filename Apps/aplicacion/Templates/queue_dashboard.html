@@ -1,0 +1,44 @@
+{% extends "Layout.html" %}
+{% load static %}
+{% block title %}Dashboard de Turnos de barberos{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/Style.css' %}">
+<link rel="stylesheet" href="{% static 'css/queue_style.css' %}">
+<meta name="csrf-token" content="{{ csrf_token }}">
+{% endblock %}
+
+{% block navbar %}
+    {% include "navbar.html" %}
+{% endblock %}
+
+{% block content %}
+<h1>Turnos de Barbería</h1>
+
+<div class="quadrants-container">
+    {% for barber_data in queue_data %}
+    <div class="quadrant" data-barber-id="{{ barber_data.barber_id }}"> {# Usamos el ID del barbero #}
+        <h2>Barbero: {{ barber_data.barber_name }}</h2>
+        {# Si tu modelo Barbero tiene un campo 'foto', descomenta la línea de abajo. #}
+        {# Si no, usa un placeholder estático como esta línea: #}
+        <img src="{% static 'image/bellako.jpg' %}" alt="{{ barber_data.barber_name }}" class="barber-photo">
+        <div class="queue-info">
+            <h3>Número Actual: <span class="current-queue-number">{{ barber_data.current_number }}</span></h3>
+            <p>Tu Turno Asignado: <span class="your-assigned-number">N/A</span></p> 
+        </div>
+    {% if can_see_buttons %}
+        <button class="next-button" data-barber-id="{{ barber_data.barber_id }}">Siguiente Turno</button>
+        <button class="reset-button" data-barber-id="{{ barber_data.barber_id }}">Resetear Contador</button>
+    {% else %}
+        {# Opcional: Puedes quitar este p si no quieres mostrar nada #}
+        <p>No tienes permiso para gestionar la cola.</p>
+    {% endif %}
+    </div>
+    {% empty %}
+    <p>No hay barberos registrados o activos para mostrar en el dashboard.</p>
+    {% endfor %}
+</div>
+
+{% endblock %}
+{% block scripts %}
+    <script src="{% static 'JavaScript/queue_scripts.js' %}"></script>
+{% endblock %}

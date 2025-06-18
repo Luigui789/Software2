@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecciona tu Barbero</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/customer_queue_style.css' %}">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+<body>
+    <div id="selection-screen">
+        <h1>Selecciona a tu Barbero</h1>
+        <div class="barber-selection-container">
+            {% for barber_data in barberos_data %}
+            <div class="barber-card" data-barber-id="{{ barber_data.barber_id }}">
+                <img src="{% static 'image/barber_placeholder.jpg' %}" alt="{{ barber_data.barber_name }}">
+                <h2>{{ barber_data.barber_name }}</h2>
+                <p>Clientes en espera: {{ barber_data.clients_in_queue }}</p>
+                <button class="select-barber-button">Seleccionar</button>
+            </div>
+            {% empty %}
+            <p>No hay barberos disponibles en este momento.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="assigned-ticket-display">
+        <h2>¡Gracias! Tu turno ha sido asignado.</h2>
+        <p>Tu número para <strong id="assigned-barber-name"></strong> es:</p>
+        <strong id="your-ticket-number"></strong>
+        <p class="current-status">Número actual siendo atendido por <span id="current-barber-name-display"></span>: <strong id="current-ticket-number-display"></strong></p>
+        <p style="margin-top: 20px; font-size: 0.9em; color: #888;">Por favor, espera tu turno.</p>
+        <button id="restart-selection-button">Volver a Seleccionar</button>
+    </div>
+
+    {% block scripts %}
+        <script src="{% static 'JavaScript/customer_scripts.js' %}"></script>
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,31 @@
+# Ignorar entorno virtual
+env/
+*.py[cod]
+__pycache__/
+*.sqlite3
+
+# Ignorar archivos de credenciales y configuración local
+.env
+mycreds.txt
+client_secrets.json
+
+# Ignorar archivos temporales o del sistema operativo
+*.log
+*.pot
+*.pyc
+*.pyo
+*.swp
+.DS_Store
+Thumbs.db
+
+# Archivos generados por editores de texto
+.vscode/
+.idea/
+
+# Archivos de reporte generados
+/media/reportes/
+
+# Archivos de configuración del sistema operativo o backup
+*~
+*.bak
+*.tmp

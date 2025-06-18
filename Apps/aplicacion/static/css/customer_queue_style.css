@@ -1,0 +1,162 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    background-color: #f4f7f6;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    /* Ocupa toda la altura de la ventana */
+    justify-content: center;
+    align-items: center;
+}
+
+h1 {
+    color: #2c3e50;
+    margin-bottom: 40px;
+    font-size: 2.5em;
+}
+
+.barber-selection-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    max-width: 1200px;
+    width: 100%;
+}
+
+.barber-card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    padding: 25px;
+    width: 280px;
+    text-align: center;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.barber-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.barber-card img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+    border: 4px solid #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.5);
+}
+
+.barber-card h2 {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    color: #34495e;
+    font-size: 1.8em;
+}
+
+.barber-card p {
+    color: #7f8c8d;
+    font-size: 1.1em;
+    margin-bottom: 20px;
+}
+
+.barber-card button {
+    background-color: #2ecc71;
+    /* Verde más vibrante */
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 80%;
+    /* Botón más ancho */
+}
+
+.barber-card button:hover {
+    background-color: #27ae60;
+}
+
+/* Estilos para la pantalla de ticket asignado */
+#assigned-ticket-display {
+    background-color: #ecf0f1;
+    border: 1px solid #bdc3c7;
+    padding: 30px;
+    border-radius: 15px;
+    margin-top: 40px;
+    display: none;
+    /* Oculto por defecto */
+    text-align: center;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+#assigned-ticket-display h2 {
+    color: #27ae60;
+    /* Verde de éxito */
+    margin-bottom: 15px;
+    font-size: 2em;
+}
+
+#assigned-ticket-display p {
+    font-size: 1.4em;
+    color: #34495e;
+    margin-bottom: 10px;
+}
+
+#assigned-ticket-display strong {
+    color: #e74c3c;
+    /* Rojo para el número de turno */
+    font-size: 2em;
+    display: block;
+    /* Para que ocupe su propia línea */
+    margin: 10px 0;
+}
+
+#assigned-ticket-display .current-status {
+    font-size: 1.3em;
+    color: #7f8c8d;
+    margin-top: 20px;
+}
+
+#assigned-ticket-display .current-status strong {
+    color: #3498db;
+    /* Azul para el número actual */
+    font-size: 1.6em;
+}
+
+#assigned-ticket-display #restart-selection-button {
+    background-color: #95a5a6;
+    /* Gris */
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-top: 30px;
+    transition: background-color 0.3s ease;
+}
+
+#assigned-ticket-display #restart-selection-button:hover {
+    background-color: #7f8c8d;
+}
+
+/* Ocultar elementos de layout.html si decides no usar base extends */
+header,
+footer,
+nav {
+    display: none !important;}

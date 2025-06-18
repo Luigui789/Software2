@@ -17,7 +17,7 @@
         <a href="{% url 'AdServicio' %}"><button>GESTIONAR SERVICIO</button></a>
         <a href="{% url 'AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
         <a href="{% url 'reporte_servicios' %}" target="_blank"><button>GENERAR REPORTE</button></a>
-        <a href="{% url 'reporte_graficas' %}"><button> GRAFICAS</button></a>
+        <a href="{% url 'reporte_graficas' %}"><button> GRAFICAS</button></a> s
     {% elif request.user.rol.nombre == 'Administrador' %}
         <a href="{% url 'AdBarbero' %}"><button>GESTIONAR BARBERO </button></a>
         <a href="{% url 'AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>

@@ -1,0 +1,100 @@
+/* Apps/aplicacion/static/css/queue_style.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+}
+
+h1 {
+    text-align: center;
+    color: #0056b3;
+    margin-bottom: 40px;
+}
+
+.quadrants-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.quadrant {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.quadrant h2 {
+    color: #007bff;
+    margin-bottom: 15px;
+}
+
+.barber-photo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 20px;
+    border: 3px solid #ddd;
+}
+
+.queue-info {
+    margin-bottom: 25px;
+}
+
+.queue-info h3 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.current-queue-number {
+    font-size: 3.5em;
+    font-weight: bold;
+    color: #28a745; /* Verde para el número actual */
+    display: block;
+    margin-top: 5px;
+}
+
+.your-assigned-number {
+    font-size: 1.2em;
+    color: #6c757d;
+}
+
+.next-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.next-button:hover {
+    background-color: #0056b3;
+}
+
+.reset-button {
+    background-color: #d00f01;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.reset-button:hover {
+    background-color: #8a0000;
+}

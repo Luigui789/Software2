@@ -35,6 +35,11 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('logout/', views.logout_view, name='logout'),
 
+#    WebSocket URL para la cola de barberos
+    path('barber-dashboard/', views.queue_dashboard, name='queue_dashboard'),
+    path('increment-queue/', views.increment_served_queue, name='increment_queue_number'),
+
+    # WebSocket URL para la selección de barbero por cliente
+    path('select-barber/', views.customer_queue_select, name='customer_queue_select'),
+    path('issue-customer-ticket/', views.issue_customer_ticket, name='issue_customer_ticket'),
 ] 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
