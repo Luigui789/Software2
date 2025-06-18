@@ -11,9 +11,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Quick-start development settings - unsuitable for production
@@ -134,3 +137,9 @@ AXES_FAILURE_LIMIT = 5  # número máximo de intentos antes del bloqueo
 AXES_COOLOFF_TIME = 1  # en horas (ej: 1 hora de bloqueo)
 AXES_LOCKOUT_TEMPLATE = 'login_bloqueado.html'  # plantilla personalizada para bloqueo
 AXES_ONLY_USER_FAILURES = False  # también bloquea por IP
+
+# Twilio
+TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN')
+TWILIO_WHATSAPP_NUMBER = config('TWILIO_WHATSAPP_NUMBER')
+TWILIO_TEMPLATE_SID = config('TWILIO_TEMPLATE_SID', default='')

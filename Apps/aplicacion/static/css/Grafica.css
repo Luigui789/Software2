@@ -1,8 +1,11 @@
-h1 {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 1.8rem;
+.Container{
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
 }
+
 
 /* Estilos para el formulario de filtro */
 .filtro-form {
@@ -60,25 +63,41 @@ h1 {
     background-color: #0056b3;
 }
 
-/* Contenedor de la gráfica centrado */
 .chart-container {
     display: flex;
     justify-content: center;
-    align-items: center;
-    padding: 10px;
+    align-items: flex-start;
+    gap: 40px; /* Espacio entre gráficas */
+    flex-wrap: wrap; /* Para que se ajusten en pantallas pequeñas */
+    padding: 20px;
 }
 
-/* Gráfica responsive */
-canvas#barberoChart {
-    max-width: 100%;
-    height: auto;
+.chart-box {
+    background-color: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
     width: 100%;
+    max-width: 500px;
 }
 
-/* Limitar el ancho en pantallas grandes */
-@media (min-width: 768px) {
-    .chart-container {
-        max-width: 600px;
-        margin: 0 auto;
-    }
+canvas {
+    width: 100% !important;
+    height: auto !important;
+}
+
+.messages {
+    list-style-type: none;
+    padding: 0;
+    margin: 10px auto;
+    width: 80%;
+    text-align: center;
+}
+.messages li {
+    color: white;
+    background-color: #e74c3c;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-weight: bold;
 }

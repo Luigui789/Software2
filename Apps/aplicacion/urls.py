@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -7,6 +9,7 @@ urlpatterns = [
     path('Quienes_Somos/', views.quienes, name='Quienes_Somos'),
     path('Contactanos/', views.contacto, name='Contactanos'),
     path('administracion/', views.administracion, name='administracion'),
+    path('Servicios/', views.servicios, name='Servicios'),
 
 
     path('AdBarbero/', views.AdminBarbero, name='AdBarbero'),
@@ -27,8 +30,11 @@ urlpatterns = [
     path('reporte-servicios/pdf/', views.descargar_reporte_pdf, name='descargar_reporte_pdf'),
     path('reporte-servicios/excel/', views.descargar_reporte_excel, name='descargar_reporte_excel'),
     path('reporte-graficas/', views.reporte_grafica, name='reporte_graficas'),
+    path('enviar_reporte_excel_whatsapp/', views.enviar_reporte_excel_whatsapp, name='enviar_reporte_excel_whatsapp'),
 
     path('login/', views.login, name='login'),
     path('logout/', views.logout_view, name='logout'),
 
-]
+] 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

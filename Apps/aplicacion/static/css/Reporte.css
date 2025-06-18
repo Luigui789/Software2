@@ -117,3 +117,76 @@ tbody tr:hover td {
 .filtro-form button:hover {
     background-color: #0056b3;
 }
+
+.messages {
+    list-style-type: none;
+    padding: 0;
+    margin: 10px auto;
+    width: 80%;
+    text-align: center;
+}
+.messages li {
+    color: white;
+    background-color: #e74c3c;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.report-buttons-container {
+    display: flex; /* Para poner los botones en línea */
+    justify-content: center; /* Centrar los botones horizontalmente */
+    gap: 15px; /* Espacio entre los botones */
+    margin-top: 25px; /* Espacio superior para separar de otros elementos */
+    margin-bottom: 25px; /* Espacio inferior */
+}
+
+.report-buttons-container button {
+    padding: 12px 25px; /* Relleno interno */
+    border: none; /* Sin borde */
+    border-radius: 8px; /* Bordes redondeados */
+    cursor: pointer; /* Cambiar cursor al pasar por encima */
+    font-size: 16px; /* Tamaño de fuente */
+    font-weight: bold; /* Negrita */
+    color: white; /* Color del texto */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Transiciones suaves */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para dar profundidad */
+}
+
+/* Estilos específicos para el botón Descargar PDF */
+.btn-pdf {
+    background-color: #dc3545; /* Rojo de Bootstrap para peligro/error */
+}
+
+.btn-pdf:hover {
+    background-color: #c82333; /* Rojo más oscuro al pasar el ratón */
+    transform: translateY(-2px); /* Pequeño levantamiento */
+}
+
+/* Estilos específicos para el botón Descargar Excel */
+.btn-excel {
+    background-color: #28a745; /* Verde de Bootstrap para éxito */
+}
+
+.btn-excel:hover {
+    background-color: #218838; /* Verde más oscuro al pasar el ratón */
+    transform: translateY(-2px);
+}
+
+/* Estilos específicos para el botón Enviar WhatsApp */
+.btn-whatsapp {
+    background-color: #25d366; /* Verde de WhatsApp */
+    display: flex; /* Para alinear el icono y el texto */
+    align-items: center; /* Centrar verticalmente */
+    gap: 8px; /* Espacio entre icono y texto */
+}
+
+.btn-whatsapp:hover {
+    background-color: #1da851; /* Verde WhatsApp más oscuro */
+    transform: translateY(-2px);
+}
+
+/* Estilos para el icono (si usas Boxicons o similar) */
+.btn-whatsapp i {
+    font-size: 20px; /* Tamaño del icono */
+}

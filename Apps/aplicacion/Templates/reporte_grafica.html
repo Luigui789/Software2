@@ -28,14 +28,34 @@
         <input type="date" name="fin" value="{{ fin }}">
 
         <button type="submit">Filtrar</button>
+        
+    {% endif %}
+        {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li class="{% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </li>
+    </ul>
+    {% endfor %}
     {% endif %}
 </form>
-<h1>Cortes realizados por Barbero</h1>
+<div class="Container">   
+    <h2>Gráficas</h2>
 
-<div class="chart-container">
-    {{ labels|json_script:"labels-data" }}
-    {{ data|json_script:"data-data" }}
-    <canvas id="barberoChart" width="600" height="400"></canvas>
+    <div class="chart-container">
+        <div class="chart-box">
+            {{ labels|json_script:"labels-data" }}
+            {{ data|json_script:"data-data" }}
+            <canvas id="barberoChart" width="400" height="300"></canvas>
+        </div>
+
+        <div class="chart-box">
+            {{ corte_labels|json_script:"corte-labels-data" }}
+            {{ corte_data|json_script:"corte-data-data" }}
+            <canvas id="corteChart" width="400" height="300"></canvas>
+        </div>
+    </div>
 </div>
 {% endblock %}
 

@@ -15,18 +15,18 @@
             <div class="info-child">
                 <h2>Agregar Servicio</h2>
                 <p>En esta sección, Puedes agregar la información de los servicios.</p>
+                {% if errores %}
+                    <ul class="errores">
+                        {% for error in errores %}
+                            <li style="color: red;">{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
             </div>
         </div>
         <div class="form-information">
             <div class="form-information-child">
                 <h2>Datos de Servicios</h2>
-                {% if errores %}
-                    <ul class="errores">
-                        {% for error in errores %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
                 <form action="" method="POST" class="form">
                     {% csrf_token %}
                     <label>

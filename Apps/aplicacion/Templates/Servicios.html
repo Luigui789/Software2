@@ -1,0 +1,72 @@
+{% extends "Layout.html" %}
+{% load static %}
+{% block title %}Servicios{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/Servicios.css' %}">
+<link rel="stylesheet" href="{% static 'css/Style.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="servicios-container">
+    <h1 class="servicios-title">SERVICIOS BÁSICOS</h1>
+    <div class="servicios-grid">
+        <div class="servicio-col">
+            <ul class="servicio-list">
+                <li>
+                    <span class="servicio-nombre">Corte <span class="servicio-tipo">fade</span></span>
+                    <span class="servicio-precio">C$170</span>
+                </li>
+                <li>
+                    <span class="servicio-nombre">Corte <span class="servicio-tipo">Shave</span></span>
+                </li>
+                <li>
+                    <span class="servicio-nombre">Barba <span class="servicio-tipo">Royal</span></span>
+                </li>
+                <li>
+                    <span class="servicio-nombre">Delineado <span class="servicio-tipo">De cerquillo</span></span>
+                </li>
+                <li>
+                    <span class="servicio-nombre">Delineado <span class="servicio-tipo">De cejas</span></span>
+                </li>
+                <li>
+                    <span class="servicio-nombre">Mascarilla <span class="servicio-tipo">Facial</span></span>
+                </li>
+                <li>
+                    <span class="servicio-nombre">Blower</span>
+                </li>
+            </ul>
+        </div>
+        <div class="divider"></div>
+        <div class="servicio-col">
+            <div class="combo-section">
+                <h2>Combos hipster cut</h2>
+                <p class="combo-desc">(incluye corte + barba)</p>
+                <div class="combo-list">
+                    <div class="combo-item">
+                        <span>Shave</span>
+                        <span class="servicio-precio">C$190</span>
+                    </div>
+                    <div class="combo-item">
+                        <span>Royal</span>
+                        <span class="servicio-precio">C$210</span>
+                    </div>
+                </div>
+                <h3>King cut</h3>
+                <p class="combo-desc">(incluye corte + barba + cejas + mascarilla)</p>
+                <div class="combo-list">
+                    <div class="combo-item">
+                        <span>Shave</span>
+                        <span class="servicio-precio">C$280</span>
+                    </div>
+                    <div class="combo-item">
+                        <span>Royal</span>
+                        <span class="servicio-precio">C$300</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="{% static 'css/Style2.css' %}">
 <link rel="stylesheet" href="{% static 'css/Reporte.css' %}">
 <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 
 {% endblock %}
 {% block content %}
@@ -21,26 +22,43 @@
     </select>
 
     {% if filtro == 'rango' %}
-        <label for="inicio">Desde:</label>
-        <input type="date" name="inicio" value="{{ inicio }}">
+    <label for="inicio">Desde:</label>
+    <input type="date" name="inicio" value="{{ inicio }}">
 
-        <label for="fin">Hasta:</label>
-        <input type="date" name="fin" value="{{ fin }}">
+    <label for="fin">Hasta:</label>
+    <input type="date" name="fin" value="{{ fin }}">
 
-        <button type="submit">Filtrar</button>
+    <button type="submit">Filtrar</button>
+    {% endif %}
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li class="{% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </li>
+    </ul>
+    {% endfor %}
     {% endif %}
 </form>
 
 <h1>Reporte de Servicios Realizados</h1>
-<div style="text-align: center; margin-top: 10px;">
-    <a href="{% url 'descargar_reporte_pdf' %}?filtro={{ filtro }}{% if inicio %}&inicio={{ inicio }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}" target="_blank">
-    <button>📄 Descargar PDF</button>
+
+<div class="report-buttons-container">
+    <a href="{% url 'descargar_reporte_pdf' %}?filtro={{ filtro }}{% if inicio %}&inicio={{ inicio }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}"
+        target="_blank">
+        <button class="btn-pdf">📄 Descargar PDF</button> 
     </a>
 
-    <a href="{% url 'descargar_reporte_excel' %}?filtro={{ filtro }}{% if inicio %}&inicio={{ inicio }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}" target="_blank">
-        <button>📊 Descargar Excel</button>
+    <a href="{% url 'descargar_reporte_excel' %}?filtro={{ filtro }}{% if inicio %}&inicio={{ inicio }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}"
+        target="_blank">
+        <button class="btn-excel">📊 Descargar Excel</button>
     </a>
 
+    <form method="POST" action="{% url 'enviar_reporte_excel_whatsapp' %}">
+        {% csrf_token %}
+        <input type="hidden" name="numero" value="+50577027337"> <input type="hidden" name="filtro" value="{{ filtro }}">
+        <button type="submit" class="btn-whatsapp"><i class='bx bxl-whatsapp'></i>Enviar Excel por WhatsApp</button> 
+    </form>
 </div>
 <br>
 <br>

@@ -1,0 +1,149 @@
+body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: #e0d7c6;
+    margin: 0;
+    padding: 0;
+}
+
+.servicios-container {
+    background: rgba(255,255,255,0.95);
+    border-radius: 32px;
+    max-width: 900px;
+    margin: 40px auto 0 auto;
+    padding: 40px 30px 30px 30px;
+    box-shadow: 0 8px 32px rgba(64,39,14,0.15);
+}
+
+.servicios-title {
+    font-family: 'Playfair Display', serif;
+    color: #a97c3b;
+    text-align: center;
+    font-size: 2.3rem;
+    letter-spacing: 2px;
+    margin-bottom: 32px;
+}
+
+.servicios-grid {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.servicio-col {
+    flex: 1;
+}
+
+.servicio-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.servicio-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 1.15rem;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #e0d7c6;
+    padding-bottom: 8px;
+}
+
+.servicio-nombre {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    color: #40270E;
+}
+
+.servicio-tipo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-style: italic;
+    font-weight: 400;
+    color: #a97c3b;
+    margin-left: 6px;
+    font-size: 1rem;
+}
+
+.servicio-precio {
+    font-family: 'Space Grotesk', sans-serif;
+    color: #a97c3b;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-left: 18px;
+}
+
+.divider {
+    width: 2px;
+    background: #a97c3b33;
+    border-radius: 2px;
+    margin: 0 18px;
+}
+
+.combo-section h2, .combo-section h3 {
+    font-family: 'Playfair Display', serif;
+    color: #40270E;
+    margin-bottom: 6px;
+    margin-top: 18px;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+}
+
+.combo-section h3 {
+    margin-top: 28px;
+    font-size: 1.15rem;
+    color: #a97c3b;
+}
+
+.combo-desc {
+    font-size: 1rem;
+    color: #a97c3b;
+    margin-bottom: 14px;
+    font-style: italic;
+}
+
+.combo-list {
+    margin-bottom: 10px;
+}
+
+.combo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.08rem;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed #e0d7c6;
+}
+
+.combo-item span:first-child {
+    font-family: 'Space Grotesk', sans-serif;
+    color: #40270E;
+}
+
+.combo-item .servicio-precio {
+    color: #a97c3b;
+    font-weight: 700;
+}
+
+@media (max-width: 800px) {
+    .servicios-grid {
+        flex-direction: column;
+        gap: 24px;
+    }
+    .divider {
+        display: none;
+    }
+}
+
+@media (max-width: 500px) {
+    .servicios-container {
+        padding: 18px 5px;
+    }
+    .servicios-title {
+        font-size: 1.3rem;
+    }
+    .servicio-list li, .combo-item {
+        font-size: 1rem;
+    }
+}

@@ -6,8 +6,6 @@ from django.contrib.auth.hashers import make_password
 
 # Create your models here.
 
-from django.contrib.auth.hashers import make_password
-
 class Rol(models.Model):
     nombre = models.CharField(max_length=30, unique=True)
     descripcion = models.TextField(blank=True)
