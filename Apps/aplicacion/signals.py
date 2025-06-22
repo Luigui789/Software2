@@ -11,7 +11,7 @@ def crear_empleado_automatico(sender, instance, created, **kwargs):
         if instance.rol and not Empleado.objects.filter(persona=instance).exists():
             Empleado.objects.create(
                 persona=instance,
-                rol=instance.rol,  # <--- ASIGNA EL ROL AQUÍ
+                rol=instance.rol,  
                 Salario=9000,      # Puedes ajustar esto según tu lógica
                 fecha_contratacion=timezone.now()
             )

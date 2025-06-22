@@ -1,31 +1,31 @@
-# Ignorar entorno virtual
+# Entorno virtual
 env/
-*.py[cod]
+venv/
+
+# Archivos de Python
 __pycache__/
+*.py[cod]
+*.so
+
+# Archivos de base de datos
 *.sqlite3
 
-# Ignorar archivos de credenciales y configuración local
-.env
-mycreds.txt
-client_secrets.json
-
-# Ignorar archivos temporales o del sistema operativo
+# Archivos de configuración personal
+*.env
+*.local
 *.log
-*.pot
-*.pyc
-*.pyo
-*.swp
+*.bak
+
+# Archivos de sistema
 .DS_Store
 Thumbs.db
 
-# Archivos generados por editores de texto
+# Archivos de editores
 .vscode/
 .idea/
+*.sublime-project
+*.sublime-workspace
 
-# Archivos de reporte generados
-/media/reportes/
-
-# Archivos de configuración del sistema operativo o backup
-*~
-*.bak
-*.tmp
+# Credenciales sensibles
+client_secrets.json
+mycreds.json

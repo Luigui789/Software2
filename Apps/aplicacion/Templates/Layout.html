@@ -29,6 +29,7 @@
             <li><a href="{% url 'login' %}">INICIAR SESION</a></li>
             {% endif %}
             {% if user.is_authenticated %}
+            <li><a href="{% url 'customer_queue_select' %}">TURNOS</a></li>
             <li><a href="{% url 'administracion' %}">Administración</a></li>
             <li><a href="{% url 'logout' %}">Cerrar Sesion</a></li>
             {% endif %}

@@ -22,7 +22,6 @@ body {
     /* Rojo fuerte */
     padding: 0.5rem 1rem;
     position: relative;
-    border-radius: 5px;
 }
 
 .navbar-logo img {
@@ -47,6 +46,7 @@ body {
     padding: 0.5rem 1rem;
     border-radius: 5px;
     transition: background 0.2s;
+    font-size: 15px;
 }
 
 .navbar-links a:hover {

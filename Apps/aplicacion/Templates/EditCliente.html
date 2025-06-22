@@ -15,41 +15,41 @@
             <div class="info-child">
                 <h2>Editar Cliente</h2>
                 <p>En esta sección, Puedes Editar la información de los Clientes.</p>
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="color: red;">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
             </div>
         </div>
         <div class="form-information">
             <div class="form-information-child">
                 <h2>Datos personales</h2>
-                {% if errores %}
-                <ul class="errores">
-                    {% for error in errores %}
-                    <li style="color: red;" >{{ error }}</li>
-                    {% endfor %}
-                </ul>
-                {% endif %}
                 <form action="" method="POST" class="form">
                     {% csrf_token %}
                     <label>
                         <i class='bx bx-rename'></i>
-                        <input type="text" placeholder="Primer Nombre:" name="primer_nombre" maxlength="15" required><!-- REQUERIED -->
+                        <input type="text" placeholder="Primer Nombre:" name="primer_nombre" maxlength="15" value="{{ cliente.nombre1}}" required><!-- REQUERIED -->
                     </label>
                     <label>
-                        <input type="text" placeholder="Segundo Nombre:" name="segundo_nombre" maxlength="15">
+                        <input type="text" placeholder="Segundo Nombre:" name="segundo_nombre" maxlength="15" value="{{ cliente.nombre2 }}">
                     </label>
                     <label>
                         <i class='bx bxs-rename'></i>
-                        <input type="text" placeholder="Primer Apellido:" name="primer_Apellido" required maxlength="15"><!-- REQUERIED -->
+                        <input type="text" placeholder="Primer Apellido:" name="primer_Apellido" required  value="{{ cliente.apellidoP}}" maxlength="15"><!-- REQUERIED -->
                     </label>
                     <label>
-                        <input type="text" placeholder="Segundo Apellido:" name="segundo_Apellido" maxlength="15">
+                        <input type="text" placeholder="Segundo Apellido:" name="segundo_Apellido" maxlength="15"  value="{{ cliente.apellidoM }}">
                     </label>
                     <label>
                         <i class='bx bxl-instagram-alt'></i>
-                        <input type="text" placeholder="Instagram:" name="instagram" maxlength="15">
+                        <input type="text" placeholder="Instagram:" name="instagram" maxlength="15"  value="{{ cliente.instagram }}">
                     </label>
                     <label>
                         <i class='bx bxl-gmail'></i>
-                        <input type="email" placeholder="Email:" name="email" maxlength="60">
+                        <input type="email" placeholder="Email:" name="email" maxlength="60"  value="{{ cliente.correo }}">
                     </label>
                     <input type="submit" value="Guardar" id="guardar">
                 </form>

@@ -14,13 +14,11 @@
             <div class="info-child">
                 <h1>Agregar Barbero</h1>
                 <p>En esta sección, Puedes agregar la información de nuevos barberos.</p>
-                <div id="errores-barbero"></div>
             </div>
         </div>
         <div class="form-information">
             <div class="form-information-child">
                 <h2>Datos personales</h2>
-                <div id="errores-barbero"></div>
                 <form action="" method="POST" class="form">
                     {% csrf_token %}
                     <label>
@@ -65,6 +63,7 @@
             <div class="info-child">
                 <h1>Ya casi terminas</h1>
                 <p>En esta sección, Tendras que ingresar informacion adicional del barbero.</p>
+                <div id="errores-barbero"></div>
                 <input type="button" value="Atras" id="Atras_empleado">
             </div>
         </div>
@@ -93,7 +92,7 @@
                     </label>
                     <label>
                         <i class='bx bxs-id-card'></i>
-                        <input type="text" name="Cedula" placeholder="Cedula:">
+                        <input type="text" name="Cedula" placeholder="Cedula:" maxlength="14">
                     </label>
                     <input type="submit" value="Guardar" id="Guardar">
                 </form>
@@ -148,7 +147,7 @@
                         </form>
                         <form action="{% url 'remover_barbero' barbero.id %}" method="POST" style="display:inline;">
                             {% csrf_token %}
-                            <button type="submit" class="delete-btn">Remover</button>
+                            <button type="submit" class="delete-btn" onclick="return confirm('¿Estás seguro de que quieres desactivar este servicio?');">Remover</button>
                         </form>
                     </td>
                 </tr>

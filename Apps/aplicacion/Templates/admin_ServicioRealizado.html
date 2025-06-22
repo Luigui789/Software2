@@ -16,10 +16,10 @@
                 <h2>Agregar Servicios Realizados</h2>
                 <p>En esta sección, Puedes agregar los servicios realizados.</p>
 
-                {% if errores %}
-                <ul class="errores">
-                    {% for error in errores %}
-                    <li style="color:red;">{{ error }}</li>
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="color: red;">{{ message }}</li>
                     {% endfor %}
                 </ul>
                 {% endif %}
@@ -96,7 +96,7 @@
                             {% endfor %}
                         </td>
                         <td>     
-                            <form action="{% url 'editar_servicioRealizado' realizado.barbero.id %}">
+                            <form action="{% url 'editar_servicioRealizado' realizado.id %}" method="GET" style="display:inline;">
                                 {% csrf_token %}
                                 <button type="submit" class="edit-btn">Editar</button>
                             </form>

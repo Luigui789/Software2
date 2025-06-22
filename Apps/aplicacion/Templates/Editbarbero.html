@@ -5,8 +5,8 @@
 <link rel="stylesheet" href="{% static 'css/Style2.css' %}">
 <link rel="stylesheet" href="{% static 'css/AdBarbero.css' %}">
 <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-
 {% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="container-form Empleado">
@@ -19,38 +19,31 @@
         <div class="form-information">
             <div class="form-information-child">
                 <h2>Datos personales</h2>
-                <form action="" method="POST" class="form">
+                <form id="formEmpleadoContainer" class="form">
                     {% csrf_token %}
-                    <label>
-                        <i class='bx bx-rename'></i>
+                    <label><i class='bx bx-rename'></i>
                         <input type="text" name="primer_nombre" placeholder="Primer Nombre:" value="{{ barbero.Empleado.persona.nombre1 }}" required>
-                        <!-- REQUERIED -->
                     </label>
                     <label>
                         <input type="text" name="segundo_nombre" placeholder="Segundo Nombre:" value="{{ barbero.Empleado.persona.nombre2 }}">
                     </label>
-                    <label>
-                        <i class='bx bxs-rename'></i>
-                        <input type="text" name="primer_Apellido" placeholder="Primer Apellido:" value="{{ barbero.Empleado.persona.apellidoP }}" required><!-- REQUERIED -->
+                    <label><i class='bx bxs-rename'></i>
+                        <input type="text" name="primer_Apellido" placeholder="Primer Apellido:" value="{{ barbero.Empleado.persona.apellidoP }}" required>
                     </label>
                     <label>
                         <input type="text" name="segundo_Apellido" placeholder="Segundo Apellido: " value="{{ barbero.Empleado.persona.apellidoM }}">
                     </label>
-                    <label>
-                        <i class='bx bxs-phone'></i>
-                        <input type="text" name="telefono" placeholder="Telefono:" value="{{ barbero.Empleado.persona.telefono }}" required><!-- REQUERIED -->
+                    <label><i class='bx bxs-phone'></i>
+                        <input type="text" name="telefono" placeholder="Telefono:" value="{{ barbero.Empleado.persona.telefono }}" required>
                     </label>
-                    <label>
-                        <i class='bx bxl-gmail'></i>
-                        <input type="email" name="email" placeholder="Email:" value="{{ barbero.Empleado.persona.email }}" required><!-- REQUERIED -->
+                    <label><i class='bx bxl-gmail'></i>
+                        <input type="email" name="email" placeholder="Email:" value="{{ barbero.Empleado.persona.email }}" required>
                     </label>
-                    <label>
-                        <i class='bx bx-user'></i>
-                        <input type="text" name="usuario" placeholder="Usuario:" value="{{  barbero.Empleado.persona.username }}" required><!-- REQUERIED -->
+                    <label><i class='bx bx-user'></i>
+                        <input type="text" name="usuario" placeholder="Usuario:" value="{{ barbero.Empleado.persona.username }}" required>
                     </label>
-                    <label>
-                        <i class='bx bxs-shield'></i> 
-                        <input type="password" name="password" placeholder="Contraseña:" value="{{ barbero.Empleado.persona.password }}" required><!-- REQUERIED -->
+                    <label><i class='bx bxs-shield'></i> 
+                        <input type="password" name="password" placeholder="Contraseña:" value="{{ barbero.Empleado.persona.password }}">
                     </label>
                     <input type="button" value="Siguiente" id="Sig_empleado">
                 </form>
@@ -69,28 +62,23 @@
         <div class="form-information">
             <div class="form-information-child">
                 <h2>Datos Adicionales</h2>
-                <p>Info. adicional</p>
-                <form action="" method="POST" class="form">
+                <form id="formSaveContainer" class="form">
                     {% csrf_token %}
-                    <label>
-                        <i class='bx bxs-wallet'></i>
+                    <label><i class='bx bxs-wallet'></i>
                         <input type="number" name="Salario" placeholder="Salario:" value="{{ barbero.Empleado.Salario }}" step="any">
                     </label>
-                    <label>
-                        <i class='bx bxs-map'></i>
+                    <label><i class='bx bxs-map'></i>
                         <input type="text" name="Direccion" placeholder="Direccion:" value="{{ barbero.Direccion }}" required>
                     </label>
-                    <label>
-                        <i class='bx bxs-id-card'></i>
+                    <label><i class='bx bxs-id-card'></i>
                         <input type="text" name="Cedula" placeholder="Cedula:" value="{{ barbero.cedula }}" required>
                     </label>
-                    <input type="submit" value="Guardar" id="Guardar">
+                    <input type="button" value="Guardar" id="Guardar">
                 </form>
             </div>
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block scripts %}

@@ -15,10 +15,13 @@
             <div class="info-child">
                 <h2>Agregar Cliente</h2>
                 <p>En esta sección, Puedes agregar la información de nuevos Clientes.</p>
-                    {% for error in errores %}
-                    <ul class="errores"></ul>
-                    <li style="color: red;" >{{ error }}</li>
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="color: red;">{{ message }}</li>
                     {% endfor %}
+                </ul>
+                {% endif %}
                 </ul>
             </div>
         </div>

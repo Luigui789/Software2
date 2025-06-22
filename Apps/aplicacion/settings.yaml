@@ -1,0 +1,18 @@
+client_config_backend: file
+client_config_file: client_secrets.json # Asegúrate que este nombre es correcto
+
+save_credentials: True
+save_credentials_backend: file
+save_credentials_file: mycreds.txt # Usamos .txt porque así lo tienes en tu código
+
+get_refresh_token: True
+
+oauth_scope:
+  - https://www.googleapis.com/auth/drive.file # Solo acceso a archivos creados por la app
+  # Si necesitas ver/modificar cualquier archivo en el Drive del usuario, usa:
+  # - https://www.googleapis.com/auth/drive 
+  # El scope 'drive' es más amplio, el 'drive.file' es más restrictivo y a menudo preferible.
+
+oauth_flow_params:
+  access_type: offline
+  prompt: consent

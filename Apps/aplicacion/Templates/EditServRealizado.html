@@ -15,7 +15,13 @@
             <div class="info-child">
                 <h2>Agregar Servicios Realizados</h2>
                 <p>En esta sección, Puedes agregar los servicios realizados.</p>
-
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="color: red;">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
             </div>
         </div>
         <div class="form-information">
@@ -61,7 +67,7 @@
                             {% if servicio.id in servicios_seleccionados or servicio.id|stringformat:"s" in servicios_seleccionados %}
                                 selected
                             {% endif %}
-                        >{{ servicio.nombre }}</option>
+                        >{{ servicio.nombre }}</option>162
                         {% endfor %}
                     </select>
                     </label>

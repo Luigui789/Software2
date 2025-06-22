@@ -25,7 +25,7 @@
 }
 
 .information{
-    width: 40%;
+    width: 45%;
     display: flex;
     align-items: center;
     text-align: center;
@@ -99,6 +99,7 @@
 .form-information-child h2{
     font-size: 2rem;
     color: black;
+    padding-top: 1rem;
 }
 .form-information-child p{
 color: #555;
@@ -112,7 +113,7 @@ color: #555;
 .form label{
     display: flex;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     border-radius: 15px; 
     background-color: #fff;
     padding: 0 10px;

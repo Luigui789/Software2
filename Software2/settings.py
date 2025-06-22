@@ -27,7 +27,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 SECRET_KEY = 'django-insecure--+*p=wvy&gz1vq_wpr0zbfg9+h3xh^&38-m0x48ejt8tulyv7='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -145,7 +145,7 @@ AUTHENTICATION_BACKENDS = [
 AXES_FAILURE_LIMIT = 5  # número máximo de intentos antes del bloqueo
 AXES_COOLOFF_TIME = 1  # en horas (ej: 1 hora de bloqueo)
 AXES_LOCKOUT_TEMPLATE = 'login_bloqueado.html'  # plantilla personalizada para bloqueo
-AXES_ONLY_USER_FAILURES = False  # también bloquea por IP
+AXES_FAILURE_LIMIT_BY_USERNAME = True # Para lograr el mismo comportamiento recomendado
 
 # Twilio
 TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID')

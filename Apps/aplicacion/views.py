@@ -1,25 +1,29 @@
 import json
 import openpyxl
 import os
+import re
 
 from django.conf import settings
 from django.shortcuts import render,redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import Group
 from django.utils import timezone
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_POST
 from datetime import timedelta, date, datetime
-from django.views.decorators.csrf import csrf_exempt # ¡Importante: Considera eliminar esto en producción!
 from django.http import JsonResponse,HttpResponse
 from .models import Persona, Empleado, Barbero, BarberQueue, Cliente, Servicio, Servicio_Realizado, Detalle_ServicioRealizado,Rol
-from decimal import Decimal
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from decimal import Decimal, InvalidOperation
 from functools import wraps
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from openpyxl.utils import get_column_letter
 from django.db.models import Count, ObjectDoesNotExist
+from django.db import transaction
 from twilio.rest import Client
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
@@ -30,18 +34,70 @@ from asgiref.sync import async_to_sync
 
 def rol_requerido(roles_permitidos):
     def decorator(view_func):
+        # Opcional: Usar el decorador login_required de Django para asegurar que el usuario esté autenticado.
+        # Si ya usas @login_required en tus vistas, no necesitas esto aquí.
+        # @login_required 
         def _wrapped_view(request, *args, **kwargs):
-            # Permitir acceso a superusuarios
-            persona = Persona.objects.filter(id=request.user.pk).first()
+            # 1. Verificar si el usuario está autenticado al principio
+            if not request.user.is_authenticated:
+                messages.error(request, "Debes iniciar sesión para acceder a esta página.")
+                return redirect('login') # Redirigir a login si no está autenticado
+
+            # 2. Permitir acceso a superusuarios primero
             if request.user.is_superuser:
                 return view_func(request, *args, **kwargs)
-            if persona:
-                rol_usuario = persona.rol.nombre.lower()
-                if rol_usuario in [r.lower() for r in roles_permitidos]:
-                    return view_func(request, *args, **kwargs)
-            return redirect('login')  # O a donde prefieras
+            try:
+                persona = Persona.objects.get(id=request.user.pk)
+            except Persona.DoesNotExist:
+                # El usuario autenticado no tiene un registro de Persona asociado.
+                messages.error(request, "Tu cuenta de usuario no está asociada a un perfil de persona válido.")
+                return redirect('login') # O a una página de error/perfil incompleto
+
+            # 3. Verificar si la persona tiene un rol asignado
+            if not persona.rol:
+                messages.warning(request, "Tu cuenta de usuario no tiene un rol asignado. Acceso denegado.")
+                return redirect('login') # O a una página donde se pueda asignar un rol
+
+            # 4. Verificar el rol
+            rol_usuario = persona.rol.nombre.lower()
+            if rol_usuario in [r.lower() for r in roles_permitidos]:
+                return view_func(request, *args, **kwargs)
+            else:
+                messages.error(request, "No tienes los permisos necesarios para acceder a esta página.")
+                return redirect('index') # O a una página de "acceso denegado"
         return _wrapped_view
     return decorator
+
+def assign_persona_to_group_by_rol(persona_instance, request=None):
+    if persona_instance.rol:
+        cargo_name = persona_instance.rol.nombre
+        try:
+            target_group = Group.objects.get(name=cargo_name)
+            persona_instance.groups.clear() # Limpia grupos existentes (siempre quieres 1 por Rol)
+            persona_instance.groups.add(target_group)
+            return True
+        except Group.DoesNotExist:
+            error_msg = f"Error: El grupo de Django '{cargo_name}' (basado en el Rol) no existe. Asegúrese de crearlo en el admin."
+            if request:
+                messages.error(request, error_msg)
+            else:
+                print(f"ERROR: {error_msg}")
+            return False
+        except Exception as e:
+            error_msg = f"Error inesperado al asignar el grupo de Django: {e}"
+            if request:
+                messages.error(request, error_msg)
+            else:
+                print(f"ERROR: {error_msg}")
+            return False
+    else:
+        # Si la Persona no tiene un rol asignado, puedes decidir si es un error
+        warning_msg = f"Advertencia: La persona {persona_instance.username} no tiene un Rol asignado, por lo que no se asignará a un grupo de Django específico."
+        if request:
+            messages.warning(request, warning_msg)
+        else:
+            print(warning_msg)
+        return True # Se considera un éxito si no hay rol que asignar
 
 def index(request):
     return render(request, 'index.html')
@@ -103,17 +159,84 @@ def logout_view(request):
     auth_logout(request)
     return redirect('login')
 
-@login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+@login_required(login_url='login')
 @rol_requerido(['Administrador', 'Barbero', 'Aprendiz'])
+@permission_required(
+    (
+    'aplicacion.view_servicio_realizado',
+    'aplicacion.view_detalle_serviciorealizado',
+    'aplicacion.view_cliente'
+    ), raise_exception=True)
 def administracion(request):
-    ultimos_servicios = Servicio_Realizado.objects.order_by('-id')[:5]
-    # Calcula el precio total para cada servicio realizado
+    ultimos_servicios_query = Servicio_Realizado.objects.all()
+
+    # --- Determinar el rol para la lógica de filtrado de la vista ---
+    user_rol = None
+    if request.user.is_superuser:
+        # Si es un superusuario, tratarlo como 'administrador' para la lógica de datos
+        user_rol = 'administrador'
+    elif hasattr(request.user, 'rol') and request.user.rol:
+        # Para usuarios regulares, obtener el rol de su objeto Persona
+        user_rol = request.user.rol.nombre.lower()
+
+    # --- Lógica de filtrado de servicios basada en el rol del usuario ---
+    if user_rol == 'administrador':
+        # Administradores (y superusuarios) ven todos los servicios
+        ultimos_servicios_query = ultimos_servicios_query.order_by('-fecha', '-id')
+    elif user_rol == 'barbero' or user_rol == 'aprendiz':
+        # Barberos y aprendices solo ven los servicios en los que son el barbero
+        try:
+            # Obtener el objeto Empleado asociado a la Persona logueada (request.user es Persona)
+            empleado_asociado = Empleado.objects.get(persona=request.user)
+            # Obtener el objeto Barbero asociado a ese Empleado
+            barbero_asociado = Barbero.objects.get(Empleado=empleado_asociado) # Aquí 'Empleado' es el campo ForeignKey en Barbero
+            
+            ultimos_servicios_query = ultimos_servicios_query.filter(barbero=barbero_asociado).order_by('-fecha', '-id')
+        except (Empleado.DoesNotExist, Barbero.DoesNotExist):
+            messages.warning(request, "Tu perfil de barbero no está correctamente asociado. No se pueden mostrar tus servicios.")
+            ultimos_servicios_query = ultimos_servicios_query.none() # No mostrar nada
+        except Exception as e:
+            messages.error(request, f"Error inesperado al filtrar servicios: {e}")
+            ultimos_servicios_query = ultimos_servicios_query.none() # No mostrar nada
+    else:
+        # Este bloque solo debería ser alcanzado si el usuario no tiene un rol válido
+        # o si hay algún problema inesperado con request.user.rol,
+        # ya que el decorador @rol_requerido ya debería haber filtrado.
+        messages.error(request, "Acceso no autorizado para tu rol.")
+        return redirect('index') # O a una página de acceso denegado
+
+    # --- Optimización de consultas con select_related y prefetch_related ---
+    ultimos_servicios = ultimos_servicios_query.select_related(
+        'cliente',
+        'barbero',
+        'barbero__Empleado',
+        'barbero__Empleado__persona'
+    ).prefetch_related(
+        'detalle__Servicio'
+    ).distinct()[:5]
+
+    # --- Calcular el precio total y preparar datos para la plantilla ---
     for realizado in ultimos_servicios:
-        total = sum(detalle.Servicio.precio for detalle in realizado.detalle.all())
+        total = 0
+        for detalle in realizado.detalle.all():
+            if hasattr(detalle, 'Servicio') and detalle.Servicio and hasattr(detalle.Servicio, 'precio'):
+                total += float(detalle.Servicio.precio)
         realizado.precio_total = total
+
+        # Pre-formatear nombres para la plantilla
+        realizado.cliente_nombre_completo = f"{realizado.cliente.nombre1} {realizado.cliente.apellidoP}" \
+            if realizado.cliente and realizado.cliente.nombre1 and realizado.cliente.apellidoP \
+            else "Cliente Desconocido"
+
+        barbero_persona = realizado.barbero.Empleado.persona if realizado.barbero and realizado.barbero.Empleado and hasattr(realizado.barbero.Empleado, 'persona') else None
+        realizado.barbero_nombre_completo = f"{barbero_persona.nombre1} {barbero_persona.apellidoP}" \
+                    if barbero_persona and barbero_persona.nombre1 and barbero_persona.apellidoP \
+            else "Barbero Desconocido"
+
     return render(request, 'Administracion.html', {
         'ultimos_servicios': ultimos_servicios,
     })
+
 
 def equipo(request):
     return render(request, 'Conoce_al_equipo.html')
@@ -128,215 +251,420 @@ def quienes(request):
 def contacto(request):
     return render(request, 'Contactanos.html')
 
-login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+# Constantes de longitud máxima (sincronizadas con tus modelos)
+MAX_LEN_NOMBRE = 15
+MAX_LEN_APELLIDO = 15
+MAX_LEN_TELEFONO = 15 # Tu modelo lo tiene en 15, no en 8
+MAX_LEN_USUARIO = 15
+MAX_LEN_CEDULA = 14
+MIN_LEN_PASSWORD = 8
+
+# Función para validar cédula (ejemplo, puede necesitar más reglas específicas de Nicaragua)
+def validar_cedula_nicaragua(cedula):
+    if len(cedula) != 14:
+        return False, "La cédula debe tener exactamente 14 caracteres."
+    # Cédulas nicaragüenses son NNN-NNNNNN-NLLLL, pero la validación actual es 13 dígitos y 1 letra.
+    # Ajusta según el formato real. Por ahora, me baso en tu lógica.
+    numeros = sum(c.isdigit() for c in cedula)
+    letras = sum(c.isalpha() for c in cedula)
+    if numeros != 13 or letras != 1:
+        return False, "La cédula debe contener exactamente 13 números y 1 letra (ej. XXXXXXXXXXXXL)."
+    return True, ""
+
+
+@login_required(login_url='login')
 @rol_requerido(['Administrador'])
+@permission_required('aplicacion.add_barbero', raise_exception=True)
 def AdminBarbero(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'errores': ['Formato de datos JSON inválido.']})
+
         errores = []
 
-        # Validaciones
-        if len(data['primer_nombre']) > 15:
-            errores.append("El primer nombre no puede tener más de 15 caracteres.")
-        if len(data['segundo_nombre']) > 15:
-            errores.append("El segundo nombre no puede tener más de 15 caracteres.")
-        if len(data['primer_Apellido']) > 15:
-            errores.append("El primer apellido no puede tener más de 15 caracteres.")
-        if len(data['segundo_Apellido']) > 15:
-            errores.append("El segundo apellido no puede tener más de 15 caracteres.")
-        if len(data['telefono']) > 8:
-            errores.append("El teléfono no puede tener más de 8 caracteres.")
-        if len(data['usuario']) > 15:   
-            errores.append("El usuario no puede tener más de 15 caracteres.")
-        if len(data['Salario']) > 10:
-            errores.append("El salario no puede tener más de 10 caracteres.")
-        if len(data['Direccion']) > 50:
-            errores.append("La dirección no puede tener más de 50 caracteres.")
+        # 1. Validación de campos obligatorios y tipo de datos
+        required_fields = ['primer_nombre', 'primer_Apellido', 'telefono', 'usuario', 'password', 'Rol', 'Salario', 'Direccion', 'Cedula']
+        for field in required_fields:
+            if not data.get(field): # Usa .get() para evitar KeyError si el campo no existe
+                errores.append(f"El campo '{field.replace('_', ' ').capitalize()}' es obligatorio.")
 
-        cedula = data['Cedula']
-        if len(cedula) != 14:
-            errores.append("La cédula debe tener exactamente 14 caracteres (13 números y 1 letra).")
-        elif sum(c.isdigit() for c in cedula) != 13 or sum(c.isalpha() for c in cedula) != 1:
-            errores.append("La cédula debe contener exactamente 13 números y 1 letra.")
+        # Si faltan campos obligatorios, no tiene sentido continuar con otras validaciones
+        if errores:
+            return JsonResponse({'status': 'error', 'errores': errores})
 
-        if not data['primer_nombre'].isalpha():
-            errores.append("El primer nombre es obligatorio y solo debe contener letras.")
-        if data['segundo_nombre'] and not data['segundo_nombre'].isalpha():
-            errores.append("El segundo nombre solo debe contener letras.")
-        if not data['primer_Apellido'].isalpha():
-            errores.append("El primer apellido es obligatorio y solo debe contener letras.")
-        if data['segundo_Apellido'] and not data['segundo_Apellido'].isalpha():
-            errores.append("El segundo apellido solo debe contener letras.")
-        if not data['telefono'].isdigit():
-            errores.append("El teléfono es obligatorio y solo debe contener números.")
-        if not data['usuario']:
-            errores.append("El usuario es obligatorio.")
-        if not data['password'] or len(data['password']) < 8:
-            errores.append("La contraseña es obligatoria y debe tener al menos 8 caracteres.")
-        if not data['Rol']:
-            errores.append("El Rol es obligatorio.")
-        if not data['Salario'] or not str(data['Salario']).replace('.', '', 1).isdigit():
-            errores.append("El salario es obligatorio y debe ser un número.")
+        # 2. Validaciones de longitud y contenido
+        # Nombres y Apellidos
+        if len(data['primer_nombre']) > MAX_LEN_NOMBRE or not data['primer_nombre'].isalpha():
+            errores.append(f"El primer nombre es obligatorio, solo letras y no más de {MAX_LEN_NOMBRE} caracteres.")
+        if data.get('segundo_nombre'): # Usar .get() para campos opcionales
+            if len(data['segundo_nombre']) > MAX_LEN_NOMBRE or not data['segundo_nombre'].isalpha():
+                errores.append(f"El segundo nombre solo letras y no más de {MAX_LEN_NOMBRE} caracteres.")
+        
+        if len(data['primer_Apellido']) > MAX_LEN_APELLIDO or not data['primer_Apellido'].isalpha():
+            errores.append(f"El primer apellido es obligatorio, solo letras y no más de {MAX_LEN_APELLIDO} caracteres.")
+        if data.get('segundo_Apellido'):
+            if len(data['segundo_Apellido']) > MAX_LEN_APELLIDO or not data['segundo_Apellido'].isalpha():
+                errores.append(f"El segundo apellido solo letras y no más de {MAX_LEN_APELLIDO} caracteres.")
+
+        # Teléfono
+        if len(data['telefono']) > MAX_LEN_TELEFONO or not data['telefono'].isdigit():
+            errores.append(f"El teléfono es obligatorio, solo números y no más de {MAX_LEN_TELEFONO} caracteres.")
+        if Persona.objects.filter(telefono__iexact=data['telefono']).exists(): # __iexact para case-insensitive
+            errores.append("El teléfono ya está en uso por otro usuario.")
+
+        # Usuario
+        if len(data['usuario']) > MAX_LEN_USUARIO:
+            errores.append(f"El usuario no puede tener más de {MAX_LEN_USUARIO} caracteres.")
+        # Validación de unicidad de usuario
+        if Persona.objects.filter(username__iexact=data['usuario']).exists(): # __iexact para case-insensitive
+            errores.append("El nombre de usuario ya está en uso.")
+
+        # Contraseña
+        password = data['password']
+        if len(password) < MIN_LEN_PASSWORD:
+            errores.append(f"La contraseña es obligatoria y debe tener al menos {MIN_LEN_PASSWORD} caracteres.")
+        # Validaciones de complejidad de contraseña (ejemplo)
+        if not re.search(r'[A-Z]', password):
+            errores.append("La contraseña debe incluir al menos una letra mayúscula.")
+        if not re.search(r'[a-z]', password):
+            errores.append("La contraseña debe incluir al menos una letra minúscula.")
+        if not re.search(r'\d', password):
+            errores.append("La contraseña debe incluir al menos un número.")
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password): # Añade los caracteres especiales que desees
+            errores.append("La contraseña debe incluir al menos un carácter especial.")
+
+        # Salario
+        try:
+            salario_value = Decimal(str(data['Salario'])) # Convertir a Decimal para precisión
+            # Validación de decimales y tamaño, si lo deseas mantener aquí
+            # Modelo tiene max_digits=10, decimal_places=2. 
+            # Esto significa 8 dígitos antes del punto (10 - 2 = 8)
+            if salario_value.as_tuple().exponent < -2: # Si tiene más de 2 decimales
+                errores.append("El salario puede tener como máximo 2 decimales.")
+            # Convertir a cadena para contar dígitos antes del punto
+            if len(str(int(salario_value))) > 8: # Max 8 dígitos enteros
+                errores.append("El salario es demasiado grande. Máximo 8 dígitos antes del punto.")
+        except (ValueError, TypeError):
+            errores.append("El salario debe ser un número válido.")
+        # Asegurarse de que salario_value esté definido aunque haya un error en el try
+        if 'salario_value' not in locals(): # Si la conversión falló y salario_value no se definió
+            salario_value = Decimal('0.00') # Valor por defecto para evitar KeyError en la creación
+
+        # Dirección
+        # Direccion es TextField, no tiene max_length en el modelo, pero puedes poner un límite si quieres
         if not data['Direccion']:
             errores.append("La dirección es obligatoria.")
-        if data['email'] and '@' not in data['email']:
-            errores.append("El correo electrónico no es válido.")
+        if len(data['Direccion']) > 255: # Límite razonable para un TextField si no hay max_length
+            errores.append("La dirección es demasiado larga.")
+
+        # Cédula
+        cedula_ok, cedula_msg = validar_cedula_nicaragua(data['Cedula'])
+        if not cedula_ok:
+            errores.append(cedula_msg)
+        # Validación de unicidad de cédula
+        if Barbero.objects.filter(cedula=data['Cedula']).exists():
+            errores.append("La cédula ya está registrada para otro barbero.")
+
+        # Email
+        email = data.get('email') # Es opcional en tu modelo
+        if email:
+            if '@' not in email or '.' not in email:
+                errores.append("El correo electrónico no es válido.")
+            # Validación de unicidad de email (si email se usa como único en Persona)
+            if Persona.objects.filter(email__iexact=email).exists():
+                errores.append("El correo electrónico ya está en uso.")
+
 
         if errores:
             return JsonResponse({'status': 'error', 'errores': errores})
         
+        # 3. Validar y obtener el objeto Rol
         try:
             rol_obj = Rol.objects.get(nombre=data['Rol'])
         except Rol.DoesNotExist:
             return JsonResponse({'status': 'error', 'errores': ['El rol seleccionado no existe.']})
 
-        rol_obj = Rol.objects.get(nombre=data['Rol'])
+        # --- TRANSACCIÓN ATÓMICA PARA CREAR OBJETOS RELACIONADOS ---
+        try:
+            with transaction.atomic():
+                persona = Persona.objects.create(
+                    nombre1=data['primer_nombre'],
+                    nombre2=data.get('segundo_nombre', ''), # Use .get para campos opcionales y valor por defecto
+                    apellidoP=data['primer_Apellido'],
+                    apellidoM=data.get('segundo_Apellido', ''),
+                    telefono=data['telefono'],
+                    rol=rol_obj,
+                    email=data.get('email', ''), # Usar .get para campos opcionales
+                    username=data['usuario'],
+                    password=make_password(password), # Usar la variable 'password' limpia
+                    is_active=True,
+                    is_staff=(rol_obj.nombre == 'Administrador'), # True si es Admin, False en otro caso
+                    is_superuser=(rol_obj.nombre == 'Administrador') # True si es Admin, False en otro caso
+                )
 
-        # Inserción en las tablas
-        persona = Persona.objects.create(
-            nombre1=data['primer_nombre'],
-            nombre2=data['segundo_nombre'],
-            apellidoP=data['primer_Apellido'],
-            apellidoM=data['segundo_Apellido'],
-            telefono=data['telefono'],
-            rol=rol_obj,  # Asignar el rol al crear la persona
-            email=data['email'],
-            username=data['usuario'],
-            password=make_password(data['password']),
-            is_active=True,
-            is_staff=True,  # Asumiendo que los barberos son parte del staff
-        )
-        empleado = Empleado.objects.create(
-            persona=persona,
-            Salario=data['Salario'],
-            fecha_contratacion=timezone.now()
-        )
-        barbero = Barbero.objects.create(
-            Empleado=empleado,
-            Direccion=data['Direccion'],
-            cedula=data['Cedula'],
-            Estado=True,
-            Comisiones=0
-        )
-        return JsonResponse({'status': 'ok'})
+                # 2. Asignar el Grupo de Django a la Persona
+                # Esto es crucial: llama a la función aquí
+                if not assign_persona_to_group_by_rol(persona, request):
+                    # Si falla la asignación del grupo, forzar la reversión de la transacción
+                    raise Exception("Fallo la asignación del grupo de la Persona.")
 
-    # Mostrar todos los ultimos 10 registros de barberos activos 
-    barberos = Barbero.objects.select_related('Empleado__persona').filter(Estado=True).order_by('-id')[:10]
-    roles = Rol.objects.all()
+                # 3. Crear Empleado (si aplica)
+                if rol_obj.nombre in ['Barbero', 'Aprendiz', 'Administrador']: # Administrador también puede ser empleado
+                    empleado = Empleado.objects.create(
+                        persona=persona,
+                        Salario=salario_value, # Usar el Decimal convertido
+                        fecha_contratacion=timezone.now()
+                    )
+                else: # Si el rol no requiere ser empleado (ej. un rol futuro de "Cliente Interno")
+                    empleado = None 
+
+                # 4. Crear Barbero (si aplica)
+                if rol_obj.nombre == 'Barbero':
+                    # Asegúrate de que el empleado se creó
+                    if empleado:
+                        barbero = Barbero.objects.create(
+                            Empleado=empleado,
+                            Direccion=data['Direccion'],
+                            cedula=data['Cedula'],
+                            Estado=True,
+                            Comisiones=Decimal('0.00')
+                        )
+                        # Opcional: Crear una cola de barbero para él si aplica
+                        BarberQueue.get_or_create_queue_for_barber(barbero)
+                    else:
+                        raise Exception("No se pudo crear el Empleado para el Barbero.")
+
+                return JsonResponse({'status': 'ok', 'mensaje': 'Usuario y perfil creados exitosamente.'})
+
+        except Exception as e:
+            # Capturar cualquier otro error durante la creación/asignación y revertir la transacción
+            print(f"DEBUG: Error en transacción: {e}") # Para depuración
+            return JsonResponse({'status': 'error', 'errores': [f'Error al procesar la solicitud: {str(e)}']})
+
+    # Si es una solicitud GET, renderiza la plantilla
+    barberos = Barbero.objects.select_related('Empleado__persona__rol').filter(Estado=True).order_by('-id')[:10]
+    roles = Rol.objects.all() # Necesitarás los roles para el select en el frontend
     return render(request, 'admin_barbero.html', {
         'barberos': barberos,
         'roles': roles,
-        # ...otros contextos...
     })
 
-
-login_required(login_url='login')  # Redirige a 'login' si no está autenticado
-@rol_requerido(['Administrador'])   
+@login_required(login_url='login')
+@rol_requerido(['Administrador'])
+@permission_required('aplicacion.delete_barbero', raise_exception=True)
 def Removerbarbero(request, barbero_id):
     if request.method == 'POST':
-        barbero = get_object_or_404(Barbero, id=barbero_id)
-        barbero.Estado = False
-        barbero.save()
-        # Opcional: también puedes desactivar el usuario si quieres
-        barbero.Empleado.persona.is_active = False
-        barbero.Empleado.persona.save()
-    return redirect('AdBarbero')  # O el nombre de tu vista de barberos
+        try:
+            barbero = get_object_or_404(Barbero, id=barbero_id)
 
+            with transaction.atomic():
+                barbero.Estado = False  # Desactivar el barbero
+                barbero.save()
+
+                # Desactivar la cuenta de usuario (Persona) asociada
+                # Acceso a través de las relaciones: Barbero -> Empleado -> Persona
+                # Asegurarse de que Empleado y Persona existen antes de intentar acceder
+                if hasattr(barbero, 'Empleado') and hasattr(barbero.Empleado, 'persona'):
+                    barbero.Empleado.persona.is_active = False
+                    barbero.Empleado.persona.save()
+                else:
+                    # Esto no debería pasar si las FK son obligatorias, pero es un fallback
+                    messages.warning(request, f'Advertencia: No se pudo desactivar la cuenta de usuario para el barbero "{barbero.id}" (Empleado/Persona no encontrados).')
+
+            # Mensaje de éxito al usuario
+            messages.success(request, f'Barbero "{barbero.Empleado.persona.username if hasattr(barbero.Empleado, "persona") else barbero.id}" y su cuenta de usuario han sido desactivados exitosamente.')
+            
+            # Redirigir a la vista de administración de barberos
+            return redirect('AdBarbero') 
+
+        except Barbero.DoesNotExist:
+            # Esto ya lo maneja get_object_or_404, pero se añade un mensaje por claridad
+            messages.error(request, 'El barbero especificado no fue encontrado.')
+            return redirect('AdBarbero') # Redirigir de vuelta con el error
+
+        except Exception as e:
+            # Capturar cualquier otro error inesperado durante el proceso
+            messages.error(request, f'Ocurrió un error inesperado al desactivar el barbero: {str(e)}')
+            return redirect('AdBarbero')
+
+    else:
+        # Si la petición no es POST, se considera un error o un intento de acceso directo
+        messages.warning(request, "Acceso no permitido. Por favor, utiliza el formulario de desactivación.")
+        return redirect('AdBarbero') # O podrías devolver un HttpResponseNotAllowed(['POST'])
+
+@login_required(login_url='login')
+@rol_requerido(['Administrador']) # Solo administradores pueden editar barberos
+@permission_required('aplicacion.change_barbero', raise_exception=True)
 def EditarBarbero(request, barbero_id):
+    # Obtener el objeto Barbero a editar o devolver 404
+    barbero_existente = get_object_or_404(Barbero, id=barbero_id)
+    empleado_existente = barbero_existente.Empleado
+    persona_existente = barbero_existente.Empleado.persona
+
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            errores = []
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'status': 'error',
+                'title': 'Error de Solicitud',
+                'message': 'Formato de datos JSON inválido. Por favor, verifica el envío.',
+                'errores': []
+            })
+        errores = []
+        # --- VALIDACIONES DE DATOS ---
+        # 1. Validación de campos obligatorios y tipo de datos
+        required_fields = ['primer_nombre', 'primer_Apellido', 'telefono', 'usuario', 'Salario', 'Direccion', 'Cedula']
+        for field in required_fields:
+            if not data.get(field):
+                errores.append(f"El campo '{field.replace('_', ' ').capitalize()}' es obligatorio.") 
+        # Validar que el campo 'Rol' no sea nulo si lo pasas, aunque no lo editas
 
-            # Validaciones de longitud
-            if len(data['primer_nombre']) > 15:
-                errores.append("El primer nombre no puede tener más de 15 caracteres.")
-            if len(data['segundo_nombre']) > 15:
-                errores.append("El segundo nombre no puede tener más de 15 caracteres.")
-            if len(data['primer_Apellido']) > 15:
-                errores.append("El primer apellido no puede tener más de 15 caracteres.")
-            if len(data['segundo_Apellido']) > 15:
-                errores.append("El segundo apellido no puede tener más de 15 caracteres.")
-            if len(data['telefono']) > 8:
-                errores.append("El teléfono no puede tener más de 8 caracteres.")
-            if len(data['usuario']) > 15:   
-                errores.append("El usuario no puede tener más de 15 caracteres.")
-            if len(data['Salario']) > 10:
-                errores.append("El salario no puede tener más de 10 caracteres.")
-            if len(data['Direccion']) > 50:
-                errores.append("La dirección no puede tener más de 50 caracteres.")
+        if errores:
+            return JsonResponse({'status': 'error', 'title': 'Errores de Validación', 'message': 'Por favor, corrige los siguientes problemas:', 'errores': errores})
 
-            # Validación de cédula
-            cedula = data['Cedula']
-            if len(cedula) != 14:
-                errores.append("La cédula debe tener exactamente 14 caracteres (13 números y 1 letra).")
-            elif sum(c.isdigit() for c in cedula) != 13 or sum(c.isalpha() for c in cedula) != 1:
-                errores.append("La cédula debe contener exactamente 13 números y 1 letra.")
+        # 2. Validaciones de longitud y contenido
+        if len(data['primer_nombre']) > MAX_LEN_NOMBRE or not data['primer_nombre'].isalpha():
+            errores.append(f"El primer nombre es obligatorio, solo letras y no más de {MAX_LEN_NOMBRE} caracteres.")
+        if data.get('segundo_nombre'):
+            if len(data['segundo_nombre']) > MAX_LEN_NOMBRE or not data['segundo_nombre'].isalpha():
+                errores.append(f"El segundo nombre solo letras y no más de {MAX_LEN_NOMBRE} caracteres.")
+        
+        if len(data['primer_Apellido']) > MAX_LEN_APELLIDO or not data['primer_Apellido'].isalpha():
+            errores.append(f"El primer apellido es obligatorio, solo letras y no más de {MAX_LEN_APELLIDO} caracteres.")
+        if data.get('segundo_Apellido'):
+            if len(data['segundo_Apellido']) > MAX_LEN_APELLIDO or not data['segundo_Apellido'].isalpha():
+                errores.append(f"El segundo apellido solo letras y no más de {MAX_LEN_APELLIDO} caracteres.")
 
-            # Validaciones de contenido
-            if not data['primer_nombre'].isalpha():
-                errores.append("El primer nombre es obligatorio y solo debe contener letras.")
-            if data['segundo_nombre'] and not data['segundo_nombre'].isalpha():
-                errores.append("El segundo nombre solo debe contener letras.")
-            if not data['primer_Apellido'].isalpha():
-                errores.append("El primer apellido es obligatorio y solo debe contener letras.")
-            if data['segundo_Apellido'] and not data['segundo_Apellido'].isalpha():
-                errores.append("El segundo apellido solo debe contener letras.")
-            if not data['telefono'].isdigit():
-                errores.append("El teléfono es obligatorio y solo debe contener números.")
-            if not data['usuario']:
-                errores.append("El usuario es obligatorio.")
-            if not data['password'] or len(data['password']) < 8:
-                errores.append("La contraseña es obligatoria y debe tener al menos 8 caracteres.")
-            if not data['Salario'] or not str(data['Salario']).replace('.', '', 1).isdigit():
-                errores.append("El salario es obligatorio y debe ser un número.")
-            if not data['Direccion']:
-                errores.append("La dirección es obligatoria.")
-            if data['email'] and '@' not in data['email']:
+        # Teléfono
+        if len(data['telefono']) > MAX_LEN_TELEFONO or not data['telefono'].isdigit():
+            errores.append(f"El teléfono es obligatorio, solo números y no más de {MAX_LEN_TELEFONO} caracteres.")
+        # Validación de unicidad de teléfono (excluyendo el propio barbero)
+        if Persona.objects.filter(telefono=data['telefono']).exclude(id=persona_existente.id).exists():
+            errores.append("El número de teléfono ya está registrado para otra persona.")
+
+        # Usuario
+        if len(data['usuario']) > MAX_LEN_USUARIO:
+            errores.append(f"El usuario no puede tener más de {MAX_LEN_USUARIO} caracteres.")
+        # Validación de unicidad de usuario (excluyendo el propio barbero)
+        if Persona.objects.filter(username__iexact=data['usuario']).exclude(id=persona_existente.id).exists():
+            errores.append("El nombre de usuario ya está en uso por otra persona.")
+
+        # Contraseña (manejo especial para edición: solo si se proporciona una nueva)
+        new_password = data.get('password', '') # Obtener la contraseña, vacía si no se envía
+        if new_password: # Si se proporciona una nueva contraseña, validarla
+            if len(new_password) < MIN_LEN_PASSWORD:
+                errores.append(f"La contraseña debe tener al menos {MIN_LEN_PASSWORD} caracteres.")
+            if not re.search(r'[A-Z]', new_password):
+                errores.append("La contraseña debe incluir al menos una letra mayúscula.")
+            if not re.search(r'[a-z]', new_password):
+                errores.append("La contraseña debe incluir al menos una letra minúscula.")
+            if not re.search(r'\d', new_password):
+                errores.append("La contraseña debe incluir al menos un número.")
+            if not re.search(r'[!@#$%^&*(),.?":{}|<>]', new_password):
+                errores.append("La contraseña debe incluir al menos un carácter especial.")
+
+        # Salario
+        try:
+            salario_value = Decimal(str(data['Salario'])) # Convertir a Decimal
+            # Modelo tiene max_digits=10, decimal_places=2. Esto significa 8 dígitos antes del punto (10 - 2 = 8)
+            if salario_value.as_tuple().exponent < -2: # Si tiene más de 2 decimales
+                errores.append("El salario puede tener como máximo 2 decimales.")
+            if len(str(int(salario_value))) > 8: # Máximo 8 dígitos enteros
+                errores.append("El salario es demasiado grande. Máximo 8 dígitos antes del punto.")
+        except (ValueError, TypeError):
+            errores.append("El salario debe ser un número válido.")
+
+        # Dirección (TextField)
+        if not data['Direccion']:
+            errores.append("La dirección es obligatoria.")
+        if len(data['Direccion']) > 255: # Límite razonable para TextField
+            errores.append("La dirección es demasiado larga.")
+
+        # Cédula
+        cedula_ok, cedula_msg = validar_cedula_nicaragua(data['Cedula'])
+        if not cedula_ok:
+            errores.append(cedula_msg)
+        # Validación de unicidad de cédula (excluyendo el propio barbero)
+        if Barbero.objects.filter(cedula=data['Cedula']).exclude(id=barbero_existente.id).exists():
+            errores.append("La cédula ya está registrada para otro barbero.")
+
+        # Email
+        email = data.get('email', '')
+        if email:
+            if '@' not in email or '.' not in email:
                 errores.append("El correo electrónico no es válido.")
-            
+            # Validación de unicidad de email (excluyendo el propio barbero)
+            if Persona.objects.filter(email__iexact=email).exclude(id=persona_existente.id).exists():
+                errores.append("El correo electrónico ya está en uso por otra persona.")
 
-            if errores:
-                return JsonResponse({'status': 'error', 'errores': errores})
+        if errores:
+            return JsonResponse({'status': 'error', 'title': 'Errores de Validación', 'message': 'Por favor, corrige los siguientes problemas:', 'errores': errores})
 
-            # Actualiza los datos del barbero
-            barbero = get_object_or_404(Barbero, id=barbero_id)
-            persona = barbero.Empleado.persona
+        # --- ACTUALIZACIÓN DE DATOS CON TRANSACCIÓN ATÓMICA ---
+        try:
+            with transaction.atomic():
+                # Actualizar Persona
+                persona_existente.nombre1 = data['primer_nombre']
+                persona_existente.nombre2 = data.get('segundo_nombre', '')
+                persona_existente.apellidoP = data['primer_Apellido']
+                persona_existente.apellidoM = data.get('segundo_Apellido', '')
+                persona_existente.telefono = data['telefono']
+                persona_existente.email = data.get('email', '')
+                persona_existente.username = data['usuario']
+                
+                # Solo actualizar la contraseña si se proporcionó una nueva
+                if new_password:
+                    persona_existente.password = make_password(new_password)
+                
+                persona_existente.save()
+                if not assign_persona_to_group_by_rol(persona_existente, request):
+                    # Si hay un error al asignar el grupo (ej. el grupo no existe),
+                    # se lanzará una excepción que revertirá la transacción.
+                    raise Exception("Fallo la asignación del grupo de Django para la Persona.")
 
-            persona.nombre1 = data['primer_nombre']
-            persona.nombre2 = data['segundo_nombre']
-            persona.apellidoP = data['primer_Apellido']
-            persona.apellidoM = data['segundo_Apellido']
-            persona.telefono = data['telefono']
-            
-            persona.email = data['email']
-            persona.username = data['usuario']
-            # Solo encripta si la contraseña cambió
-            password=make_password(data['password']),
+                # Actualizar Empleado
+                empleado_existente = barbero_existente.Empleado
+                empleado_existente.Salario = salario_value # Usar el valor float convertido
+                empleado_existente.save()
 
-            persona.save()
+                # Actualizar Barbero
+                barbero_existente.Direccion = data['Direccion']
+                barbero_existente.cedula = data['Cedula']
+                barbero_existente.save()
 
-            empleado = barbero.Empleado
-            empleado.Salario = data['Salario']
+            return JsonResponse({
+                'status': 'ok', # O 'success'
+                'title': '¡Éxito!',
+                'message': 'Datos del barbero actualizados exitosamente.'
+            })
 
-            empleado.save()
-
-            barbero.Direccion = data['Direccion']
-            barbero.cedula = data['Cedula']
-            barbero.save()
-
-            return JsonResponse({'status': 'ok'})
         except Exception as e:
-            return JsonResponse({'status': 'error', 'msg': str(e)})
-    barbero = get_object_or_404(Barbero, id=barbero_id)
-    roles = Rol.objects.all()
-    return render(request, 'Editbarbero.html', {'barbero': barbero, 'roles': roles})
+            import traceback
+            print('--- Error al guardar barbero ---')
+            print(e)
+            traceback.print_exc()
+            return JsonResponse({
+                'status': 'error',
+                'title': 'Error al Actualizar',
+                'message': f'Ocurrió un error inesperado al guardar los cambios: {str(e)}',
+                'errores': [str(e)] 
+            })
 
-login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+    # Si es una petición GET, renderizar la página de edición con los datos actuales del barbero
+    roles = Rol.objects.all() # Necesitas los roles para el select en el formulario
+    return render(request, 'Editbarbero.html', {'barbero': barbero_existente, 'roles': roles})
+
+@login_required(login_url='login')  # Redirige a 'login' si no está autenticado
 @rol_requerido(['Administrador', 'Barbero'])
+@permission_required('aplicacion.add_cliente', raise_exception=True)
 def AdminCliente(request):
-    errores = []
+    errores = [] # Lista para almacenar los mensajes de error
+    
     if request.method == 'POST':
+        # Obtención y limpieza de datos
         nombre1 = request.POST.get('primer_nombre', '').strip()
         nombre2 = request.POST.get('segundo_nombre', '').strip()
         apellidoP = request.POST.get('primer_Apellido', '').strip()
@@ -344,42 +672,64 @@ def AdminCliente(request):
         instagram = request.POST.get('instagram', '').strip()
         correo = request.POST.get('email', '').strip()
 
-        # Validaciones de longitud
+        # 1. Validaciones de Longitud
         if len(nombre1) > 15:
-            errores.append("El primer nombre no puede tener más de 30 caracteres.")
+            errores.append("El primer nombre no puede tener más de 15 caracteres.")
         if len(nombre2) > 15:
-            errores.append("El segundo nombre no puede tener más de 30 caracteres.")
+            errores.append("El segundo nombre no puede tener más de 15 caracteres.")
         if len(apellidoP) > 15:
-            errores.append("El primer apellido no puede tener más de 30 caracteres.")
-        if len(apellidoM) > 30:
+            errores.append("El primer apellido no puede tener más de 15 caracteres.")
+        if len(apellidoM) > 30: # Asumo que es 30, no 15 como en tu comentario original
             errores.append("El segundo apellido no puede tener más de 30 caracteres.")
         if len(instagram) > 15:
-            errores.append("El usuario de Instagram no puede tener más de 50 caracteres.")
+            errores.append("El usuario de Instagram no puede tener más de 15 caracteres.")
         if len(correo) > 50:
             errores.append("El correo electrónico no puede tener más de 50 caracteres.")
 
-        # Validaciones de contenido y/o caracteres
+        # 2. Validaciones de Contenido y Formato
         if not nombre1.isalpha():
             errores.append("El primer nombre es obligatorio y solo debe contener letras.")
         if nombre2 and not nombre2.isalpha():
             errores.append("El segundo nombre solo debe contener letras.")
         if not apellidoP.isalpha():
-            errores.append("El primer apellido es obligatorio y solo debe contener letras.")
+            errores.append("El primer apellido es obligatorio y solo debe contener letras.")   
         if apellidoM and not apellidoM.isalpha():
             errores.append("El segundo apellido solo debe contener letras.")
-        if correo and '@' not in correo:
-            errores.append("El correo electrónico no es válido.")
 
-        # Si hay errores, vuelve a mostrar el formulario con los errores
+        # Validación de Correo Electrónico (Obligatorio y Formato)
+        if not correo:
+            errores.append("El correo electrónico es obligatorio.")
+        else:
+            try:
+                validate_email(correo)
+            except ValidationError:
+                errores.append("El formato del correo electrónico no es válido.")
+
+        # Validación de Instagram (Opcional, solo valida si se proporcionó)
+        if instagram and not re.fullmatch(r"^[a-zA-Z0-9_.]+$", instagram):
+            errores.append("El usuario de Instagram solo puede contener letras, números, guiones bajos o puntos.")
+        
+        # 3. Validaciones de Unicidad
+        # Para correo electrónico
+        if Cliente.objects.filter(correo=correo).exists():
+            errores.append("El correo electrónico ya está registrado para otro cliente.")
+        
+        # Para usuario de Instagram (solo si se proporcionó uno)
+        if instagram and Cliente.objects.filter(instagram=instagram).exists():
+            errores.append("El usuario de Instagram ya está en uso por otro cliente.")
+
+        # Si hay errores, añadir a mensajes de Django y volver a renderizar el formulario
         if errores:
-            clientes = Cliente.objects.all()
+            for error_msg in errores:
+                messages.error(request, error_msg) # Usa messages.error para mostrar los errores
+            
+            clientes = Cliente.objects.all().order_by('-id')[:10]
             return render(request, 'Admin_Cliente.html', {
                 'clientes': clientes,
-                'errores': errores,
-                'datos': request.POST
+                'datos': request.POST # Para pre-rellenar el formulario con los datos enviados
             })
 
-        # Si todo está bien, guarda el cliente
+        # Si no hay errores, guardar el cliente
         Cliente.objects.create(
             nombre1=nombre1,
             nombre2=nombre2,
@@ -388,18 +738,22 @@ def AdminCliente(request):
             instagram=instagram,
             correo=correo
         )
+        messages.success(request, 'Cliente agregado exitosamente!') # Mensaje de éxito
         return redirect('AdCliente')
 
-    # En AdminCliente solo aparecen los ultimos 10 registros
-    clientes = Cliente.objects.all().order_by('-id')[:10]
+    # Para solicitudes GET, o si el POST no es válido inicialmente
+    clientes = Cliente.objects.all().order_by('-id')[:10] # Solo los últimos 10 registros
     return render(request, 'Admin_Cliente.html', {'clientes': clientes})
 
-login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+@login_required(login_url='login')  # Redirige a 'login' si no está autenticado
 @rol_requerido(['Administrador', 'Barbero'])
+@permission_required('aplicacion.change_cliente', raise_exception=True)
 def EditarCliente(request, cliente_id):
-    cliente = get_object_or_404(Cliente, id=cliente_id)
-    errores = []
+    cliente = get_object_or_404(Cliente, id=cliente_id) # Obtiene el cliente a editar
+    errores = [] # Lista para almacenar los mensajes de error
+    
     if request.method == 'POST':
+        # Obtención y limpieza de datos
         nombre1 = request.POST.get('primer_nombre', '').strip()
         nombre2 = request.POST.get('segundo_nombre', '').strip()
         apellidoP = request.POST.get('primer_Apellido', '').strip()
@@ -407,267 +761,601 @@ def EditarCliente(request, cliente_id):
         instagram = request.POST.get('instagram', '').strip()
         correo = request.POST.get('email', '').strip()
 
-        # Validaciones de longitud
+        # 1. Validaciones de Longitud
         if len(nombre1) > 15:
             errores.append("El primer nombre no puede tener más de 15 caracteres.")
         if len(nombre2) > 15:
             errores.append("El segundo nombre no puede tener más de 15 caracteres.")
         if len(apellidoP) > 15:
             errores.append("El primer apellido no puede tener más de 15 caracteres.")
-        if len(apellidoM) > 15:
+        if len(apellidoM) > 15: 
             errores.append("El segundo apellido no puede tener más de 30 caracteres.")
         if len(instagram) > 15:
             errores.append("El usuario de Instagram no puede tener más de 15 caracteres.")
         if len(correo) > 50:
             errores.append("El correo electrónico no puede tener más de 50 caracteres.")
 
-        # Validaciones de contenido y/o caracteres
-        if not nombre1.isalpha():
-            errores.append("El primer nombre es obligatorio y solo debe contener letras.")
-        if nombre2 and not nombre2.isalpha():
-            errores.append("El segundo nombre solo debe contener letras.")
-        if not apellidoP.isalpha():
-            errores.append("El primer apellido es obligatorio y solo debe contener letras.")
-        if apellidoM and not apellidoM.isalpha():
-            errores.append("El segundo apellido solo debe contener letras.")
-        if correo and '@' not in correo:
-            errores.append("El correo electrónico no es válido.")
+        # 2. Validaciones de Contenido y Formato
+        # Uso de re.fullmatch para permitir tildes, espacios, etc.
+        # Validación de Primer Nombre (Obligatorio)
+        if not nombre1:
+            errores.append("El primer nombre es obligatorio.")
+        elif not re.fullmatch(r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\.'-]+$", nombre1):
+            errores.append("El primer nombre solo debe contener letras, espacios, guiones, puntos o apóstrofes.")
 
+        # Validación de Segundo Nombre (Opcional, solo valida si se proporcionó)
+        if nombre2 and not re.fullmatch(r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\.'-]+$", nombre2):
+            errores.append("El segundo nombre solo debe contener letras, espacios, guiones, puntos o apóstrofes.")
+
+        # Validación de Primer Apellido (Obligatorio)
+        if not apellidoP:
+            errores.append("El primer apellido es obligatorio.")
+        elif not re.fullmatch(r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\.'-]+$", apellidoP):
+            errores.append("El primer apellido solo debe contener letras, espacios, guiones, puntos o apóstrofes.")
+
+        # Validación de Segundo Apellido (Opcional, solo valida si se proporcionó)
+        if apellidoM and not re.fullmatch(r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\.'-]+$", apellidoM):
+            errores.append("El segundo apellido solo debe contener letras, espacios, guiones, puntos o apóstrofes.")
+
+        # Validación de Correo Electrónico (Obligatorio y Formato)
+        if not correo:
+            errores.append("El correo electrónico es obligatorio.")
+        else:
+            try:
+                validate_email(correo)
+            except ValidationError:
+                errores.append("El formato del correo electrónico no es válido.")
+
+        # 3. Validaciones de Unicidad (CRÍTICO PARA EDICIÓN)
+        # Para correo electrónico: debe ser único, EXCLUYENDO al cliente actual
+        if Cliente.objects.filter(correo=correo).exclude(id=cliente.id).exists():
+            errores.append("El correo electrónico ya está registrado para otro cliente.")
+        
+        # Para usuario de Instagram: debe ser único, EXCLUYENDO al cliente actual (si se proporcionó)
+        if instagram and Cliente.objects.filter(instagram=instagram).exclude(id=cliente.id).exists():
+            errores.append("El usuario de Instagram ya está en uso por otro cliente.")
+
+        # Si hay errores, añadir a mensajes de Django y volver a renderizar el formulario
         if errores:
+            for error_msg in errores:
+                messages.error(request, error_msg) # Usa messages.error para mostrar los errores
+            
             return render(request, 'EditCliente.html', {
-                'cliente': cliente,
-                'errores': errores,
-                'datos': request.POST
+                'cliente': cliente, # Pasa el objeto cliente original para pre-rellenar datos si no se sobrescriben
+                'datos': request.POST # Para pre-rellenar el formulario con los datos enviados (incluyendo los inválidos)
             })
 
-        # Si todo está bien, guarda el cliente
+        # Si no hay errores, actualizar y guardar el cliente
         cliente.nombre1 = nombre1
         cliente.nombre2 = nombre2
         cliente.apellidoP = apellidoP
         cliente.apellidoM = apellidoM
         cliente.instagram = instagram
         cliente.correo = correo
-        cliente.save()
-        return redirect('AdCliente')
+        
+        cliente.save() # Guarda los cambios en la base de datos
+
+        messages.success(request, 'Cliente actualizado exitosamente!') # Mensaje de éxito
+        return redirect('AdCliente') # Redirige a la página que muestra la lista de clientes
+
+    # Para solicitudes GET (cuando se carga la página de edición por primera vez)
+    # Se renderiza el formulario con los datos existentes del cliente
     return render(request, 'EditCliente.html', {'cliente': cliente})
 
 
-login_required(login_url='login')  # Redirige a 'login' si no está autenticado
-@rol_requerido(['Administrador'])
+@login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+@rol_requerido(['Administrador']) # Solo Administradores pueden gestionar servicios
+@permission_required('aplicacion.add_servicio', raise_exception=True)
 def AdminServicio(request):
-    errores = []
+    errores = [] # Lista para almacenar los mensajes de error
+    
     if request.method == 'POST':
+        # Obtención y limpieza de datos
         nombre = request.POST.get('nombre', '').strip()
         tipo_servicio = request.POST.get('tipo', '').strip()
         descripcion = request.POST.get('descripcion', '').strip()
-        precio = request.POST.get('precio', '').strip()
+        precio_str = request.POST.get('precio', '').strip() # Lo guardamos como string inicialmente
 
-        # Validaciones de longitud
-        if len(nombre) > 50:
+        # 1. Validaciones de Longitud
+        if len(nombre) > 20:
             errores.append("El nombre del servicio no puede tener más de 50 caracteres.")
-        if len(tipo_servicio) > 30:
+        if len(tipo_servicio) > 20:
             errores.append("El tipo de servicio no puede tener más de 30 caracteres.")
-        if len(descripcion) > 100:
+        if len(descripcion) > 254:
             errores.append("La descripción no puede tener más de 100 caracteres.")
+        if len(precio_str) > 6: 
+            errores.append("El precio no puede tener más de 6 caracteres (incluyendo el punto decimal).")
 
-        # Validaciones de contenido
+        # 2. Validaciones de Contenido y Formato
         if not nombre:
             errores.append("El nombre del servicio es obligatorio.")
+        elif not re.fullmatch(r"^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑüÜ\.'-]+$", nombre):
+            errores.append("El nombre del servicio contiene caracteres inválidos.")
+
         if not tipo_servicio:
             errores.append("El tipo de servicio es obligatorio.")
+        elif not re.fullmatch(r"^[a-zA-Z\sáéíóúÁÉÍÓÚñÑüÜ\.'-]+$", tipo_servicio):
+            errores.append("El tipo de servicio contiene caracteres inválidos.")
+
         if not descripcion:
             errores.append("La descripción es obligatoria.")
-        if not precio or not precio.replace('.', '', 1).isdigit():
-            errores.append("El precio es obligatorio y debe ser un número.")
+        
+        # Validación de Precio
+        precio_decimal = None # Inicializamos el precio Decimal a None
+        if not precio_str:
+            errores.append("El precio es obligatorio.")
+        else:
+            try:
+                precio_decimal = Decimal(precio_str) # Intenta convertir a Decimal
+                if precio_decimal <= 0:
+                    errores.append("El precio debe ser mayor a cero.")
+            except InvalidOperation: # Captura errores durante la conversión a Decimal
+                errores.append("El precio debe ser un número válido.")
 
-        try:
-            precio = float(precio)
-            if precio <= 0:
-                errores.append("El precio debe ser mayor a cero.")
-        except ValueError:
-            errores.append("El precio debe ser un número válido.")
-
-        # Validación de nombre duplicado
+        
+        # 3. Validaciones de Unicidad
+        # Uso de __iexact para búsqueda insensible a mayúsculas/minúsculas
         if Servicio.objects.filter(nombre__iexact=nombre).exists():
             errores.append("Ya existe un servicio con este nombre.")
 
         if errores:
-            servicios = Servicio.objects.filter(estado=True)
+            for error_msg in errores:
+                messages.error(request, error_msg) # Usa messages.error para mostrar los errores
+            
+            servicios = Servicio.objects.filter(estado=True) # Se mantienen los servicios activos
             return render(request, 'admin_servicios.html', {
                 'servicios': servicios,
-                'errores': errores,
-                'datos': request.POST
+                'datos': request.POST # Para pre-rellenar el formulario con los datos enviados
             })
 
+        # Si no hay errores, guardar el servicio
+        # Asegúrate de que 'precio' ya es un float aquí
         Servicio.objects.create(
             nombre=nombre,
             tipo=tipo_servicio,
             descripcion=descripcion,
-            precio=precio,
-            estado=True
+            precio=precio_decimal, # Asegúrate de usar la variable 'precio' convertida a float
+            estado=True # Asumo que se crean como activos
         )
-        return redirect('AdServicio')
+        messages.success(request, 'Servicio agregado exitosamente!') # Mensaje de éxito
+        return redirect('AdServicio') # Redirige a la página de administración de servicios
+
+    # Se muestran solo los servicios con estado=True por defecto
     servicios = Servicio.objects.filter(estado=True)
     return render(request, 'admin_servicios.html', {'servicios': servicios})
 
-login_required(login_url='login')  # Redirige a 'login' si no está autenticado
-@rol_requerido(['Administrador'])
+@login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+@rol_requerido(['Administrador']) # Solo los Administradores pueden editar servicios
+@permission_required('aplicacion.change_servicio', raise_exception=True)
 def EditarServicio(request, servicio_id):
-    servicio = get_object_or_404(Servicio, id=servicio_id)
-    errores = []
+    servicio = get_object_or_404(Servicio, id=servicio_id) # Obtiene el servicio a editar
+    errores = [] # Lista para almacenar los mensajes de error
+    
     if request.method == 'POST':
+        # Obtención y limpieza de datos
         nombre = request.POST.get('nombre', '').strip()
         tipo_servicio = request.POST.get('tipo', '').strip()
         descripcion = request.POST.get('descripcion', '').strip()
-        precio = request.POST.get('precio', '').strip()
-        estado = request.POST.get('estado', 'True')
+        precio_str = request.POST.get('precio', '').strip() # Lo guardamos como string inicialmente
 
-        # Validaciones de longitud
-        if len(nombre) > 50:
+        # 1. Validaciones de Longitud
+        if len(nombre) > 20:
             errores.append("El nombre del servicio no puede tener más de 50 caracteres.")
-        if len(tipo_servicio) > 30:
+        if len(tipo_servicio) > 20:
             errores.append("El tipo de servicio no puede tener más de 30 caracteres.")
-        if len(descripcion) > 100:
+        if len(descripcion) > 254:
             errores.append("La descripción no puede tener más de 100 caracteres.")
+        if len(precio_str) > 6:
+            errores.append("El precio no puede tener más de 6 caracteres (incluyendo el punto decimal).")
 
-        # Validaciones de contenido
+        # 2. Validaciones de Contenido y Formato
         if not nombre:
             errores.append("El nombre del servicio es obligatorio.")
+        elif not re.fullmatch(r"^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑüÜ\.'-]+$", nombre):
+            errores.append("El nombre del servicio contiene caracteres inválidos.")
+
         if not tipo_servicio:
             errores.append("El tipo de servicio es obligatorio.")
+        elif not re.fullmatch(r"^[a-zA-Z\sáéíóúÁÉÍÓÚñÑüÜ\.'-]+$", tipo_servicio):
+            errores.append("El tipo de servicio contiene caracteres inválidos.")
+
         if not descripcion:
             errores.append("La descripción es obligatoria.")
-        if not precio or not precio.replace('.', '', 1).isdigit():
-            errores.append("El precio es obligatorio y debe ser un número.")
+        
+        # Validación de Precio (usando Decimal para precisión)
+        precio_decimal = None # Inicializamos el precio Decimal a None
+        if not precio_str:
+            errores.append("El precio es obligatorio.")
+        else:
+            try:
+                precio_decimal = Decimal(precio_str) # Intenta convertir a Decimal
+                if precio_decimal <= 0:
+                    errores.append("El precio debe ser mayor a cero.")
+            except InvalidOperation: # Captura errores durante la conversión a Decimal
+                errores.append("El precio debe ser un número válido.")
 
+        # 3. Validaciones de Unicidad
+        # Comprueba si ya existe un servicio con este nombre, EXCLUYENDO el servicio actual que se está editando.
+        if Servicio.objects.filter(nombre__iexact=nombre).exclude(id=servicio.id).exists():
+            errores.append("Ya existe otro servicio con este nombre.")
+
+        # Si hay errores, añadirlos a los mensajes de Django y volver a renderizar el formulario
         if errores:
+            for error_msg in errores:
+                messages.error(request, error_msg) # Usa messages.error para mostrar los errores
+            
+            # Pasa el objeto 'servicio' original y 'datos' (request.POST) para pre-rellenar
             return render(request, 'EditServicio.html', {
-                'servicio': servicio,
-                'errores': errores,
-                'datos': request.POST
+                'servicio': servicio, # Objeto de servicio original
+                'datos': request.POST # Datos que el usuario intentó enviar
             })
 
+        # Si no hay errores, actualiza y guarda el servicio
         servicio.nombre = nombre
         servicio.tipo = tipo_servicio
         servicio.descripcion = descripcion
-        servicio.precio = precio
-        servicio.estado = estado.lower() == 'true'
-        servicio.save()
-        return redirect('AdServicio')
+        servicio.precio = precio_decimal # Asigna el valor Decimal validado
+        
+        servicio.save() # Guarda los cambios en la base de datos
+
+        messages.success(request, 'Servicio actualizado exitosamente!') # Mensaje de éxito
+        return redirect('AdServicio') # Redirige a la página de administración de servicios
+
+    # Para solicitudes GET (cuando la página de edición se carga por primera vez)
+    # Renderiza el formulario con los datos existentes del servicio.
     return render(request, 'EditServicio.html', {'servicio': servicio})
 
-login_required(login_url='login')  # Redirige a 'login' si no está autenticado
-@rol_requerido(['Administrador'])
+@login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+@rol_requerido(['Administrador']) # Solo los Administradores pueden "remover" servicios
+@permission_required('aplicacion.delete_servicio', raise_exception=True)
 def Removerservicio(request, servicio_id):
+    # Obtener el servicio por su ID o devolver un 404 si no existe
     servicio = get_object_or_404(Servicio, id=servicio_id)
+
     if request.method == 'POST':
-        servicio.estado = False  # O el valor que uses para "inactivo"
-        servicio.save()
+        try:
+            # Cambiar el estado del servicio a inactivo
+            servicio.estado = False
+            servicio.save()
+
+            messages.success(request, f'El servicio "{servicio.nombre}" ha sido desactivado exitosamente.')
+            
+        except Exception as e:
+            # Captura cualquier error inesperado durante el guardado
+            messages.error(request, f'Ocurrió un error al desactivar el servicio "{servicio.nombre}": {e}')
+        
+        # Siempre redirigir a la página de administración de servicios después de intentar la acción
+        return redirect('AdServicio')
+    
+    # Si la solicitud no es POST (es decir, alguien intentó acceder vía GET directamente a esta URL),
+    messages.warning(request, "Acceso no permitido. Por favor, utiliza el formulario de desactivación.")
     return redirect('AdServicio')
 
-login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+
+@login_required(login_url='login')
 @rol_requerido(['Administrador', 'Barbero'])
+@permission_required(
+    ('aplicacion.add_servicio_realizado',
+    'aplicacion.add_detalle_serviciorealizado',
+    )                 , raise_exception=True)
 def AdminServicioRealizado(request):
     clientes = Cliente.objects.all()
-    barberos = Barbero.objects.filter(Estado=True)
-    servicios = Servicio.objects.filter(estado=True)
-    servicios_seleccionados = request.POST.getlist('Servicio') if request.method == 'POST' else []
-    errores = []
-
-    # Consulta todos los servicios realizados
+    # Filtramos barberos por Estado=True y que estén activos (si tienes un campo de "activo" en Usuario/Barbero)
+    barberos = Barbero.objects.filter(Estado=True) 
+    servicios = Servicio.objects.filter(estado=True) # Solo servicios activos
+    
+    # Inicializamos servicios_seleccionados_ids para mantener los checkboxes marcados
+    servicios_seleccionados_ids = request.POST.getlist('Servicio') if request.method == 'POST' else []
+    
+    # Consulta todos los servicios realizados (para mostrar en la tabla)
     servicios_realizados = Servicio_Realizado.objects.all().order_by('-fecha')
 
     if request.method == 'POST':
-        fecha = request.POST.get('Fecha')
-        cliente_id = request.POST.get('Cliente')
-        barbero_id = request.POST.get('Barbero')
-        servicios_ids = request.POST.getlist('Servicio')
+        fecha_str = request.POST.get('Fecha', '').strip()
+        cliente_id = request.POST.get('Cliente', '').strip()
+        barbero_id = request.POST.get('Barbero', '').strip()
+        servicios_ids = request.POST.getlist('Servicio') # Lista de IDs de servicios seleccionados
 
-        # Validaciones
-        if not fecha:
+        errores = [] # Reiniciar la lista de errores para cada POST
+
+        # --- Validaciones ---
+
+        # Validación de Fecha
+        fecha_obj = None
+        if not fecha_str:
             errores.append("La fecha es obligatoria.")
-        if not cliente_id or not Cliente.objects.filter(id=cliente_id).exists():
-            errores.append("Debe seleccionar un cliente válido.")
-        if not barbero_id or not Barbero.objects.filter(id=barbero_id, Estado=True).exists():
-            errores.append("Debe seleccionar un barbero válido.")
-        if not servicios_ids or not all(Servicio.objects.filter(id=sid, estado=True).exists() for sid in servicios_ids):
-            errores.append("Debe seleccionar al menos un servicio válido.")
+        else:
+            try:
+                fecha_obj = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+                
+                # Regla 1: La fecha no puede ser en el futuro
+                if fecha_obj > date.today():
+                    errores.append("La fecha no puede ser en el futuro.")
+                
+                # Regla 2: La fecha no puede ser anterior a hace 2 días (excluyendo el día actual)
+                # Calcula la fecha mínima permitida: hoy menos 2 días.
+                # Por ejemplo, si hoy es 22 de junio, la fecha mínima sería 20 de junio.
+                min_fecha_valida = date.today() - timedelta(days=2)
+                
+                if fecha_obj < min_fecha_valida:
+                    errores.append(f"La fecha no puede ser anterior al {min_fecha_valida.strftime('%d-%m-%Y')}.")
+                
+            except ValueError:
+                errores.append("El formato de la fecha es inválido. Utiliza AAAA-MM-DD.")
+        
+        # Validación de Cliente
+        cliente_obj = None
+        if not cliente_id:
+            errores.append("Debe seleccionar un cliente.")
+        else:
+            try:
+                cliente_obj = Cliente.objects.get(id=cliente_id)
+            except Cliente.DoesNotExist:
+                errores.append("El cliente seleccionado no es válido.")
 
+        # Validación de Barbero
+        barbero_obj = None
+        if not barbero_id:
+            errores.append("Debe seleccionar un barbero.")
+        else:
+            try:
+                barbero_obj = Barbero.objects.get(id=barbero_id, Estado=True)
+            except Barbero.DoesNotExist:
+                errores.append("El barbero seleccionado no es válido o está inactivo.")
+
+        # Validación de Servicios
+        servicios_seleccionados_objetos = []
+        if not servicios_ids:
+            errores.append("Debe seleccionar al menos un servicio.")
+        else:
+            for sid in servicios_ids:
+                try:
+                    servicio_obj = Servicio.objects.get(id=sid, estado=True)
+                    servicios_seleccionados_objetos.append(servicio_obj)
+                except Servicio.DoesNotExist:
+                    # En lugar de agregar un error por cada ID inválido, puedes ser más general
+                    errores.append(f"Uno o más servicios seleccionados no son válidos o están inactivos.")
+                    # Rompe el bucle si encuentras un servicio inválido para no acumular mensajes
+                    break 
+
+        # Si hay errores, añadir a mensajes de Django y volver a renderizar el formulario
         if errores:
+            for error_msg in errores:
+                messages.error(request, error_msg)
+            
+            return render(request, 'admin_ServicioRealizado.html', {
+                'clientes': clientes,
+                'barberos': barberos,
+                'servicios': servicios, # Todos los servicios activos para re-mostrar
+                'datos': request.POST, # Para pre-rellenar los campos de texto
+                'servicios_seleccionados_ids': servicios_seleccionados_ids, # Para pre-marcar los checkboxes
+                'servicios_realizados': servicios_realizados, # La tabla inferior
+            })
+
+        # --- Creación y Guardado (Transacción Atómica) ---
+        # Usamos una transacción para asegurar que todas las operaciones se completen
+        # o se reviertan si algo falla (ej. si falla la actualización de comisiones).
+        try:
+            with transaction.atomic():
+                # Crea el Servicio Realizado (maestro)
+                servicio_realizado = Servicio_Realizado.objects.create(
+                    fecha=fecha_obj, # Usar el objeto de fecha validado
+                    cliente=cliente_obj, # Asignar el objeto Cliente validado
+                    barbero=barbero_obj # Asignar el objeto Barbero validado
+                )
+                
+                total_comision_sesion = Decimal('0.00')
+
+                # Crea el Detalle para cada servicio seleccionado y suma la comisión
+                for servicio_obj in servicios_seleccionados_objetos: # Usar los objetos ya obtenidos
+                    Detalle_ServicioRealizado.objects.create(
+                        Servicio=servicio_obj, # Asignar el objeto Servicio validado
+                        Servicio_Realizado=servicio_realizado
+                    )
+                    
+                    # Suma comisión al barbero
+                    # Asegúrate de que 'comision_porcentaje' está en tu modelo Servicio o Barbero
+                    # O definir un porcentaje fijo (ej. 20%)
+                    porcentaje_comision = Decimal('0.20') # 20% de comisión
+                    comision_servicio = servicio_obj.precio * porcentaje_comision
+                    total_comision_sesion += comision_servicio
+                
+                # Actualizar la comisión del barbero UNA SOLA VEZ
+                barbero_obj.Comisiones = (barbero_obj.Comisiones or Decimal('0.00')) + total_comision_sesion
+                barbero_obj.save()
+
+            messages.success(request, 'Servicio realizado registrado exitosamente y comisiones actualizadas!')
+            return redirect('AdServicioRealizado')
+
+        except Exception as e:
+            # Si ocurre algún error durante la transacción (ej. problemas de DB, lógica inesperada)
+            messages.error(request, f'Ocurrió un error inesperado al registrar el servicio: {e}')
+            # Si la transacción falla, se revertirá automáticamente.
+            
+            # Renderizar el formulario con los datos y errores
             return render(request, 'admin_ServicioRealizado.html', {
                 'clientes': clientes,
                 'barberos': barberos,
                 'servicios': servicios,
-                'errores': errores,
                 'datos': request.POST,
-                'servicios_seleccionados': servicios_seleccionados,
+                'servicios_seleccionados_ids': servicios_seleccionados_ids,
                 'servicios_realizados': servicios_realizados,
             })
 
-        # Crea el Servicio Realizado
-        servicio_realizado = Servicio_Realizado.objects.create(
-            fecha=fecha,
-            cliente_id=cliente_id,
-            barbero_id=barbero_id
-        )
-        # Crea el Detalle para cada servicio seleccionado
-            
-        for sid in servicios_ids:
-            servicio = Servicio.objects.get(id=sid)
-            Detalle_ServicioRealizado.objects.create(
-                Servicio_id=sid,
-                Servicio_Realizado=servicio_realizado
-            )
-            # Suma comisión al barbero
-            comision = servicio.precio * Decimal('0.2')
-            barbero = servicio_realizado.barbero
-            barbero.Comisiones += comision
-            barbero.save()
-
-        return redirect('AdServicioRealizado')
+    # Para solicitudes GET (cuando se carga la página por primera vez)
     return render(request, 'admin_ServicioRealizado.html', {
         'clientes': clientes,
         'barberos': barberos,
         'servicios': servicios,
-        'servicios_seleccionados': servicios_seleccionados,
+        'servicios_seleccionados_ids': servicios_seleccionados_ids, # Será una lista vacía en GET inicial
         'servicios_realizados': servicios_realizados,
     })
 
+@login_required(login_url='login')
+@rol_requerido(['Administrador', 'Barbero'])
+@permission_required(
+    (
+        'aplicacion.change_servicio_realizado'
+        'aplicacion.change_detalle_serviciorealizado',
+    )                 , raise_exception=True)
 def EditarServicioRealizado(request, servicio_realizado_id):
     servicio_realizado = get_object_or_404(Servicio_Realizado, id=servicio_realizado_id)
     clientes = Cliente.objects.all()
     barberos = Barbero.objects.filter(Estado=True)
-    servicios = Servicio.objects.filter(estado=True)
+    servicios = Servicio.objects.filter(estado=True) # Solo servicios activos para selección
 
+    # --- CAPTURAR EL ESTADO ORIGINAL ANTES DE CUALQUIER CAMBIO EN EL POST ---
+    # Obtenemos el ID del barbero y los detalles antiguos del Servicio_Realizado actual.
+    barbero_original_id_sr = servicio_realizado.barbero.id if servicio_realizado.barbero else None
+    servicios_antiguos_detalle = servicio_realizado.detalle.all() # QuerySet de Detalle_ServicioRealizado
+
+    # Pre-calcular la comisión que generaban los servicios ANTES de la edición
+    comision_generada_por_sr_original = Decimal('0.00')
+    porcentaje_comision = Decimal('0.20') # Define esto una vez para consistencia
+    for detalle in servicios_antiguos_detalle:
+        comision_generada_por_sr_original += detalle.Servicio.precio * porcentaje_comision
+
+    # Cuando es una solicitud GET (para mostrar el formulario de edición por primera vez)
     if request.method == 'GET':
-        servicios_seleccionados = list(servicio_realizado.detalle.values_list('Servicio_id', flat=True))
+        # Obtener los IDs de los servicios ya asociados a este Servicio_Realizado
+        # Usamos str() para asegurar que la comparación en el template sea entre strings
+        servicios_seleccionados_ids_actuales = [str(s.Servicio.id) for s in servicios_antiguos_detalle]
+        
         return render(request, 'EditServRealizado.html', {
             'servicio_realizado': servicio_realizado,
             'clientes': clientes,
             'barberos': barberos,
             'servicios': servicios,
-            'servicios_seleccionados': servicios_seleccionados,
+            'servicios_seleccionados_ids': servicios_seleccionados_ids_actuales,
         })
 
-    # Si es POST, actualiza sin validar
-    fecha = request.POST.get('Fecha')
-    cliente_id = request.POST.get('Cliente')
-    barbero_id = request.POST.get('Barbero')
-    nuevos_servicios = request.POST.getlist('Servicio')
+    # Cuando es una solicitud POST (para procesar el formulario de edición)
+    elif request.method == 'POST':
+        fecha_str = request.POST.get('Fecha', '').strip()
+        cliente_id = request.POST.get('Cliente', '').strip()
+        barbero_id = request.POST.get('Barbero', '').strip()
+        nuevos_servicios_ids_str = request.POST.getlist('Servicio') 
 
-    servicio_realizado.fecha = fecha
-    servicio_realizado.cliente_id = cliente_id
-    servicio_realizado.barbero_id = barbero_id
-    servicio_realizado.save()
+        errores = [] 
 
-    servicio_realizado.detalle.all().delete()
-    for sid in nuevos_servicios:
-        Detalle_ServicioRealizado.objects.create(
-            Servicio_id=sid,
-            Servicio_Realizado=servicio_realizado
-        )
-    return redirect('AdServicioRealizado')
+        # --- 1. Validaciones ---
+        fecha_obj = None
+        if not fecha_str:
+            errores.append("La fecha es obligatoria.")
+        else:
+            try:
+                fecha_obj = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+                if fecha_obj > date.today():
+                    errores.append("La fecha no puede ser en el futuro.")
+                
+                min_fecha_valida = date.today() - timedelta(days=2) 
+                if fecha_obj < min_fecha_valida:
+                    errores.append(f"La fecha no puede ser anterior al {min_fecha_valida.strftime('%d-%m-%Y')}.")
+                
+            except ValueError:
+                errores.append("El formato de la fecha es inválido. Utiliza AAAA-MM-DD.")
+        
+        cliente_obj = None
+        if not cliente_id:
+            errores.append("Debe seleccionar un cliente.")
+        else:
+            try:
+                cliente_obj = Cliente.objects.get(id=cliente_id)
+            except Cliente.DoesNotExist:
+                errores.append("El cliente seleccionado no es válido.")
 
+        barbero_obj = None # Este será el barbero final del servicio_realizado
+        if not barbero_id:
+            errores.append("Debe seleccionar un barbero.")
+        else:
+            try:
+                barbero_obj = Barbero.objects.get(id=barbero_id, Estado=True)
+            except Barbero.DoesNotExist:
+                errores.append("El barbero seleccionado no es válido o está inactivo.")
+
+        nuevos_servicios_objetos = []
+        if not nuevos_servicios_ids_str:
+            errores.append("Debe seleccionar al menos un servicio.")
+        else:
+            for sid_str in nuevos_servicios_ids_str:
+                try:
+                    sid = int(sid_str) 
+                    servicio_obj = Servicio.objects.get(id=sid, estado=True)
+                    nuevos_servicios_objetos.append(servicio_obj)
+                except (ValueError, Servicio.DoesNotExist):
+                    errores.append(f"Uno o más servicios seleccionados no son válidos o están inactivos.")
+                    break 
+
+        # Si hay errores de validación, renderizar el formulario con mensajes de error
+        if errores:
+            for error_msg in errores:
+                messages.error(request, error_msg)
+            
+            return render(request, 'EditServRealizado.html', {
+                'servicio_realizado': servicio_realizado, 
+                'clientes': clientes,
+                'barberos': barberos,
+                'servicios': servicios,
+                'datos': request.POST, 
+                'servicios_seleccionados_ids': nuevos_servicios_ids_str,
+            })
+
+        # --- 2. Lógica de Actualización y Recálculo de Comisiones (Transacción Atómica) ---
+        try:
+            with transaction.atomic():
+                # --- Paso 1: Revertir la comisión generada por ESTE Servicio_Realizado del BARBERO ORIGINAL ---
+                if barbero_original_id_sr:
+                    # Obtenemos una instancia fresca del barbero original CON BLOQUEO (select_for_update)
+                    # Esto asegura que leemos el valor más actual y lo bloqueamos para esta transacción.
+                    barbero_para_deduccion = Barbero.objects.select_for_update().get(id=barbero_original_id_sr)
+                    
+                    barbero_para_deduccion.Comisiones = (barbero_para_deduccion.Comisiones or Decimal('0.00')) - comision_generada_por_sr_original
+                    barbero_para_deduccion.save()
+
+                # --- Paso 2: Actualizar el Servicio_Realizado (Maestro) con los nuevos datos ---
+                servicio_realizado.fecha = fecha_obj
+                servicio_realizado.cliente = cliente_obj
+                servicio_realizado.barbero = barbero_obj # Aquí se asigna el nuevo barbero
+                servicio_realizado.save() 
+
+                # --- Paso 3: Actualizar los Detalles (Eliminar los viejos y crear los nuevos) ---
+                servicio_realizado.detalle.all().delete() # Elimina todos los detalles antiguos
+
+                comision_generada_por_sr_nueva = Decimal('0.00')
+
+                # Crea nuevos Detalle_ServicioRealizado para los servicios seleccionados
+                for servicio_obj in nuevos_servicios_objetos:
+                    Detalle_ServicioRealizado.objects.create(
+                        Servicio=servicio_obj,
+                        Servicio_Realizado=servicio_realizado
+                    )
+                    comision_generada_por_sr_nueva += servicio_obj.precio * porcentaje_comision
+                
+                # --- Paso 4: Aplicar la nueva comisión al BARBERO ACTUALIZADO (barbero_obj) ---
+                # Obtenemos una instancia fresca del barbero que recibirá la comisión CON BLOQUEO.
+                # Esto es crucial si el barbero_obj es el mismo que barbero_original_id_sr,
+                # para que Comisiones tenga el valor ya modificado por la deducción.
+                barbero_para_adicion = Barbero.objects.select_for_update().get(id=barbero_obj.id)
+                barbero_para_adicion.Comisiones = (barbero_para_adicion.Comisiones or Decimal('0.00')) + comision_generada_por_sr_nueva
+                barbero_para_adicion.save()
+
+            messages.success(request, 'Servicio realizado actualizado exitosamente y comisiones recalculadas.')
+            return redirect('AdServicioRealizado')
+
+        except Exception as e:
+            messages.error(request, f'Ocurrió un error inesperado al actualizar el servicio: {e}')
+            
+            return render(request, 'EditServRealizado.html', {
+                'servicio_realizado': servicio_realizado,
+                'clientes': clientes,
+                'barberos': barberos,
+                'servicios': servicios,
+                'datos': request.POST,
+                'servicios_seleccionados_ids': nuevos_servicios_ids_str,
+            })
+
+@login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+@rol_requerido(['Administrador'])
 def filtrar_servicios_por_fecha(request):
     filtro = request.GET.get('filtro')
     hoy = date.today()
@@ -708,7 +1396,7 @@ def filtrar_servicios_por_fecha(request):
     return servicios
 
 login_required(login_url='login')  # Redirige a 'login' si no está autenticado
-@rol_requerido(['Administrador', 'Barbero', 'Aprendiz'])
+@rol_requerido(['Administrador'])
 def reporte_servicios(request):
     filtro = request.GET.get('filtro')
     servicios = Servicio_Realizado.objects.select_related(
@@ -743,7 +1431,7 @@ def reporte_servicios(request):
                     context = {
                         'servicios': servicios,
                         'filtro': filtro,
-                        'inicio': '',  # 👈 Limpiar campos
+                        'inicio': '',  
                         'fin': ''
                     }
                     return render(request, 'reporte_servicios.html', context)
@@ -756,7 +1444,7 @@ def reporte_servicios(request):
                 context = {
                     'servicios': servicios,
                     'filtro': filtro,
-                    'inicio': '',  # 👈 Limpiar campos también aquí
+                    'inicio': '', 
                     'fin': ''
                 }
                 return render(request, 'reporte_servicios.html', context)
@@ -775,7 +1463,7 @@ def reporte_servicios(request):
     return render(request, 'reporte_servicios.html', context)
 
 login_required(login_url='login')  # Redirige a 'login' si no está autenticado
-@rol_requerido(['Administrador', 'Barbero', 'Aprendiz'])
+@rol_requerido(['Administrador'])
 def descargar_reporte_pdf(request):
     filtro = request.GET.get('filtro')
     servicios = Servicio_Realizado.objects.select_related(
@@ -815,7 +1503,7 @@ def descargar_reporte_pdf(request):
     return response
 
 login_required(login_url='login')  # Redirige a 'login' si no está autenticado
-@rol_requerido(['Administrador', 'Barbero', 'Aprendiz'])
+@rol_requerido(['Administrador'])
 def descargar_reporte_excel(request):
     servicios = filtrar_servicios_por_fecha(request)
 
@@ -995,58 +1683,95 @@ def subir_a_drive_y_obtener_url(path, nombre):
     Sube un archivo a Google Drive, asegura el Content-Type para Twilio
     y obtiene su URL de descarga pública.
     """
+    
+    # Rutas de los archivos de configuración y credenciales
     client_secrets_file_path = settings.BASE_DIR / 'Apps' / 'aplicacion' / 'client_secrets.json'
-    creds_file_path = settings.BASE_DIR / 'mycreds.txt'
+    # Usar .json para las credenciales es una convención, aunque .txt puede funcionar
+    creds_file_path = settings.BASE_DIR / 'mycreds.json' 
 
     gauth = GoogleAuth()
     gauth.settings['client_config_file'] = str(client_secrets_file_path)
 
-    gauth.LoadCredentialsFile(str(creds_file_path))
+    try:
+        # Intentar cargar credenciales existentes
+        gauth.LoadCredentialsFile(str(creds_file_path))
+    except Exception as e:
+        # Si el archivo no existe o está corrupto, la carga fallará.
+        print(f"DEBUG: No se pudo cargar credenciales desde {creds_file_path}: {e}")
+        pass # Continuar al flujo de autenticación
+
+    # Lógica de autenticación principal
     if gauth.credentials is None:
-        gauth.LocalWebserverAuth()
-        gauth.SaveCredentialsFile(str(creds_file_path))
+        # Primera autenticación o credenciales inexistentes/inválidas
+        print("DEBUG: No hay credenciales válidas. Iniciando autenticación web.")
+        # *** CLAVE: Solicitar access_type='offline' para obtener el refresh_token ***
+        # 'prompt=consent' asegura que se pide consentimiento y un nuevo refresh_token
+        gauth.LocalWebserverAuth() 
+        print("DEBUG: Autenticación completada y credenciales obtenidas.")
     elif gauth.access_token_expired:
-        gauth.Refresh()
-        gauth.SaveCredentialsFile(str(creds_file_path))
+        # El token de acceso expiró, intentar refrescarlo
+        print("DEBUG: Token de acceso expirado. Intentando refrescar.")
+        try:
+            gauth.Refresh()
+            print("DEBUG: Token de acceso refrescado exitosamente.")
+        except Exception as e:
+            # Si el refresh_token es inválido o no existe, debemos re-autenticar completamente
+            print(f"ERROR: Fallo al refrescar el token: {e}. Re-autenticando completamente.")
+            # *** CLAVE: Si el refresh falla, volver a autenticar con offline access ***
+            gauth.LocalWebserverAuth()
+            print("DEBUG: Re-autenticación completada debido a fallo del refresh token.")
     else:
-        gauth.Authorize()
+        # Credenciales válidas y no expiradas, simplemente autorizar (aunque Authorize() puede ser redundante aquí)
+        print("DEBUG: Credenciales existentes y válidas.")
+        # gauth.Authorize() # No es estrictamente necesario, el objeto gauth ya está autorizado
+
+    # Guardar siempre las credenciales después de cualquier proceso de autenticación/refresco
+    # Esto asegura que el refresh_token (si se obtuvo) se persista
+    try:
         gauth.SaveCredentialsFile(str(creds_file_path))
+        print(f"DEBUG: Credenciales guardadas/actualizadas en {creds_file_path}")
+    except Exception as e:
+        print(f"ERROR: No se pudieron guardar las credenciales en {creds_file_path}: {e}")
+        # Considera cómo manejar esto, ya que el problema podría recurrir si no se guarda.
 
+    # Inicializar Google Drive con las credenciales obtenidas/refrescadas
     drive = GoogleDrive(gauth)
+    print("DEBUG: GoogleDrive service inicializado.")
 
-    # --- CAMBIO CLAVE AQUÍ: Especificar mimeType al crear el archivo ---
-    # Esto ayuda a Google Drive a saber qué tipo de archivo es.
+    # --- Sigue tu lógica de subir archivo ---
     mime_type_excel = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     file_metadata = {'name': nombre, 'mimeType': mime_type_excel}
     
-    gfile = drive.CreateFile(file_metadata)
-    gfile.SetContentFile(path)
-    gfile.Upload()
-    # print(f"Archivo '{nombre}' subido a Google Drive. ID: {gfile['id']}")
-
-    gfile.InsertPermission({
-        'type': 'anyone',
-        'value': 'reader',
-        'role': 'reader'
-    })
-    # print("Permisos de compartir configurados a 'cualquiera con el enlace puede leer'.")
-
-    # --- Segundo cambio clave: Obtener URL de exportación explícitamente ---
-    # Esta es la forma más fiable de obtener un enlace de descarga con el Content-Type correcto.
     try:
-        url_descarga = gfile.GetDownloadUrl(mimetype=mime_type_excel)
-        # print(f"URL de descarga (exportación XLSX): {url_descarga}")
-    except Exception as e:
-        # print(f"Error al obtener URL de exportación XLSX: {e}. Volviendo a webContentLink/direct download.")
-        # Fallback si GetDownloadUrl falla, aunque es menos probable que funcione con Twilio
-        url_descarga = gfile.get('webContentLink')
-        if not url_descarga:
-            url_descarga = f"https://drive.google.com/uc?id={gfile['id']}&export=download"
-        # print(f"URL de descarga fallback: {url_descarga}")
+        gfile = drive.CreateFile(file_metadata)
+        gfile.SetContentFile(path)
+        gfile.Upload()
+        print(f"DEBUG: Archivo '{nombre}' subido a Google Drive. ID: {gfile['id']}")
 
-    # print(f"URL final del archivo para Twilio: {url_descarga}")
-    # print("--- FIN: Función subir_a_drive_y_obtener_url ---\n")
-    return url_descarga
+        gfile.InsertPermission({
+            'type': 'anyone',
+            'value': 'reader',
+            'role': 'reader'
+        })
+        print("DEBUG: Permisos de compartir configurados a 'cualquiera con el enlace puede leer'.")
+
+        try:
+            url_descarga = gfile.GetDownloadUrl(mimetype=mime_type_excel)
+            print(f"DEBUG: URL de descarga (exportación XLSX): {url_descarga}")
+        except Exception as e:
+            print(f"ADVERTENCIA: Error al obtener URL de exportación XLSX: {e}. Volviendo a webContentLink/direct download.")
+            url_descarga = gfile.get('webContentLink')
+            if not url_descarga:
+                url_descarga = f"https://drive.google.com/uc?id={gfile['id']}&export=download"
+            print(f"DEBUG: URL de descarga fallback: {url_descarga}")
+
+        print(f"DEBUG: URL final del archivo para Twilio: {url_descarga}")
+        return url_descarga
+
+    except Exception as e:
+        print(f"ERROR: Fallo al subir el archivo o configurar permisos/URL: {e}")
+        # Considera cómo quieres manejar este error (ej. levantar una excepción, retornar None)
+        raise # Re-levanta la excepción para que sea manejada más arriba
 
 
 def enviar_link_whatsapp(numero, url_drive_del_reporte, nombre_reporte): # Renombrar para mayor claridad si quieres
@@ -1069,7 +1794,8 @@ def enviar_link_whatsapp(numero, url_drive_del_reporte, nombre_reporte): # Renom
         raise 
     
 
-
+# @login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+# @rol_requerido(['Administrador'])
 def enviar_reporte_excel_whatsapp(request):
     if request.method == 'POST':
         numero = request.POST.get('numero') 
@@ -1116,7 +1842,6 @@ def enviar_reporte_excel_whatsapp(request):
         # --- ETAPA 3: Enviar ENLACE por WhatsApp ---
         try:
             sid = enviar_link_whatsapp(numero, url_drive, filename) 
-            messages.success(request, f'Enlace del reporte enviado exitosamente a WhatsApp. SID: {sid}')
         except Exception as e:
             messages.error(request, f'Error al enviar el reporte por WhatsApp: {e}. '
                                     'Revisa tu configuración de Twilio y el número de destino.')

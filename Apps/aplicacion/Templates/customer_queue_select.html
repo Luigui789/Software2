@@ -16,7 +16,7 @@
             <div class="barber-card" data-barber-id="{{ barber_data.barber_id }}">
                 <img src="{% static 'image/barber_placeholder.jpg' %}" alt="{{ barber_data.barber_name }}">
                 <h2>{{ barber_data.barber_name }}</h2>
-                <p>Clientes en espera: {{ barber_data.clients_in_queue }}</p>
+                <p>Turno actual: <strong class="numeroActual" style="color: red;">{{ barber_data.current_number }}</strong> </p>
                 <button class="select-barber-button">Seleccionar</button>
             </div>
             {% empty %}

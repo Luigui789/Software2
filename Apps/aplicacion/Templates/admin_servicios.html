@@ -15,12 +15,12 @@
             <div class="info-child">
                 <h2>Agregar Servicio</h2>
                 <p>En esta sección, Puedes agregar la información de los servicios.</p>
-                {% if errores %}
-                    <ul class="errores">
-                        {% for error in errores %}
-                            <li style="color: red;">{{ error }}</li>
-                        {% endfor %}
-                    </ul>
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="color: red;">{{ message }}</li>
+                    {% endfor %}
+                </ul>
                 {% endif %}
             </div>
         </div>
@@ -36,7 +36,7 @@
                     </label>
                     <label>
                         <i class='bx bx-archive'></i>
-                        <input type="text" placeholder="Tipo" name="tipo" max="20" required>
+                        <input type="text" placeholder="Tipo" name="tipo" maxlength="20" required>
                     </label>
                     <label>
                         <i class='bx bxs-message-add'></i>
@@ -44,7 +44,7 @@
                     </label>
                     <label>
                         <i class='bx bxs-dollar-circle'></i>
-                        <input type="number" placeholder="Precio" name="precio" required step="any" maxlength="4">    
+                        <input type="number" placeholder="Precio" name="precio" required step="any" maxlength="6">    
                     </label>
                     <input type="submit" value="Guardar" id="guardar">
                 </form>
@@ -89,7 +89,7 @@
                                     class="edit-btn">Editar</button></a>
                             <form action="{% url 'remover_servicio' servicio.id %}" method="POST" style="display:inline;">
                                 {% csrf_token %}
-                                <button type="submit" class="delete-btn">Remover</button>
+                                <button type="submit" class="delete-btn" onclick="return confirm('¿Estás seguro de que quieres desactivar este servicio?');">Remover</button>
                             </form>
                         </td>
                     </tr>

@@ -17,7 +17,8 @@
         <a href="{% url 'AdServicio' %}"><button>GESTIONAR SERVICIO</button></a>
         <a href="{% url 'AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
         <a href="{% url 'reporte_servicios' %}" target="_blank"><button>GENERAR REPORTE</button></a>
-        <a href="{% url 'reporte_graficas' %}"><button> GRAFICAS</button></a> s
+        <a href="{% url 'reporte_graficas' %}"><button> GRAFICAS</button></a>
+        <a href="{% url 'queue_dashboard' %}"><button> TURNOS </button></a>
     {% elif request.user.rol.nombre == 'Administrador' %}
         <a href="{% url 'AdBarbero' %}"><button>GESTIONAR BARBERO </button></a>
         <a href="{% url 'AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>
@@ -25,15 +26,15 @@
         <a href="{% url 'AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
         <a href="{% url 'reporte_servicios' %}" target="_blank"><button>GENERAR REPORTE</button></a>
         <a href="{% url 'reporte_graficas' %}"><button> GRAFICAS</button></a>
+        <a href="{% url 'queue_dashboard' %}"><button> TURNOS </button></a>
     {% elif request.user.rol.nombre == 'Barbero' %}
         <a href="{% url 'AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>
         <a href="{% url 'AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
-        <a href="{% url 'reporte_servicios' %}" target="_blank"><button>GENERAR REPORTE</button></a>
-        <a href="{% url 'reporte_graficas' %}"><button> GRAFICAS</button></a>
+        <a href="{% url 'queue_dashboard' %}"><button> TURNOS </button></a>
     {% elif request.user.rol.nombre == 'Aprendiz' %}
-        <a href="{% url 'reporte_servicios' %}" target="_blank"><button>GENERAR REPORTE</button></a>
-        <a href="{% url 'reporte_graficas' %}"><button> GRAFICAS</button></a>
-        <!-- Solo panel de administración, puedes dejar vacío o mostrar solo el título -->
+        <a href="{% url 'queue_dashboard' %}"><button> TURNOS </button></a>
+        <a href="{% url 'AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>
+        <a href="{% url 'AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
     {% endif %}
 </aside>
 
@@ -49,6 +50,7 @@
                 <thead>
                     <tr>
                         <th>Id_Detalle</th>
+                        <th>Fecha</th>
                         <th>Cliente</th>
                         <th>Barbero</th>
                         <th>Servicios Realizados</th>
@@ -56,29 +58,42 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for realizado in ultimos_servicios %}
+                    {% for servicio_realizado in ultimos_servicios %}
                     <tr>
-                        <td>{{ realizado.id }}</td>
-                        <td>{{ realizado.cliente.nombre1 }} {{ realizado.cliente.apellidoP }}</td>
-                        <td>{{ realizado.barbero.Empleado.persona.nombre1 }} {{ realizado.barbero.Empleado.persona.apellidoP }}</td>
+                        <td>{{ servicio_realizado.id }}</td>
+                        <td>{{ servicio_realizado.fecha|date:"Y-m-d" }}</td>
+
+                        {# Usar los atributos pre-procesados de la vista #}
+                        <td>{{ servicio_realizado.cliente_nombre_completo }}</td> 
+                        <td>{{ servicio_realizado.barbero_nombre_completo }}</td>
+
                         <td>
-                            {% for detalle in realizado.detalle.all %}
-                            {{ detalle.Servicio.nombre }}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
+                            <ul>
+                                {% for detalle in servicio_realizado.detalle.all %}
+                                    <li>{{ detalle.Servicio.nombre }} - ${{ detalle.Servicio.precio|floatformat:2 }}</li>
+                                {% endfor %}
+                            </ul>
                         </td>
-                        <td>
-                            ${{ realizado.precio_total|floatformat:2 }}
-                        </td>
+                        <td>${{ servicio_realizado.precio_total|floatformat:2 }}</td>
                     </tr>
-                    {% empty %}
+                    {% empty %} {# Si no hay servicios para mostrar #}
                     <tr>
-                        <td colspan="5">No hay servicios realizados.</td>
+                        <td colspan="6">No hay servicios recientes para mostrar según tu rol.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </section>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                {{ message }}
+            </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
 </main>
 
 {% endblock %}
