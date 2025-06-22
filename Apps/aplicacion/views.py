@@ -27,6 +27,9 @@ from django.db import transaction
 from twilio.rest import Client
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -1680,90 +1683,69 @@ def generar_reporte_excel_y_guardar(servicios, filename):
 
 def subir_a_drive_y_obtener_url(path, nombre):
     """
-    Sube un archivo a Google Drive, asegura el Content-Type para Twilio
+    Sube un archivo a Google Drive usando una Cuenta de Servicio
     y obtiene su URL de descarga pública.
     """
-    
-    # Rutas de los archivos de configuración y credenciales
-    client_secrets_file_path = settings.BASE_DIR / 'Apps' / 'aplicacion' / 'client_secrets.json'
-    # Usar .json para las credenciales es una convención, aunque .txt puede funcionar
-    creds_file_path = settings.BASE_DIR / 'mycreds.json' 
+    # 1. Obtener la clave de la cuenta de servicio de las variables de entorno
+    service_account_info_json = os.environ.get('GOOGLE_SERVICE_ACCOUNT_KEY')
 
-    gauth = GoogleAuth()
-    gauth.settings['client_config_file'] = str(client_secrets_file_path)
-
-    try:
-        # Intentar cargar credenciales existentes
-        gauth.LoadCredentialsFile(str(creds_file_path))
-    except Exception as e:
-        # Si el archivo no existe o está corrupto, la carga fallará.
-        print(f"DEBUG: No se pudo cargar credenciales desde {creds_file_path}: {e}")
-        pass # Continuar al flujo de autenticación
-
-    # Lógica de autenticación principal
-    if gauth.credentials is None:
-        # Primera autenticación o credenciales inexistentes/inválidas
-        print("DEBUG: No hay credenciales válidas. Iniciando autenticación web.")
-        # *** CLAVE: Solicitar access_type='offline' para obtener el refresh_token ***
-        # 'prompt=consent' asegura que se pide consentimiento y un nuevo refresh_token
-        gauth.LocalWebserverAuth() 
-        print("DEBUG: Autenticación completada y credenciales obtenidas.")
-    elif gauth.access_token_expired:
-        # El token de acceso expiró, intentar refrescarlo
-        print("DEBUG: Token de acceso expirado. Intentando refrescar.")
+    if not service_account_info_json:
         try:
-            gauth.Refresh()
-            print("DEBUG: Token de acceso refrescado exitosamente.")
-        except Exception as e:
-            # Si el refresh_token es inválido o no existe, debemos re-autenticar completamente
-            print(f"ERROR: Fallo al refrescar el token: {e}. Re-autenticando completamente.")
-            # *** CLAVE: Si el refresh falla, volver a autenticar con offline access ***
-            gauth.LocalWebserverAuth()
-            print("DEBUG: Re-autenticación completada debido a fallo del refresh token.")
+            # Asume que el archivo de la cuenta de servicio está en la raíz del proyecto
+            with open(settings.BASE_DIR / 'google_service.json', 'r') as f:
+                service_account_info = json.load(f)
+        except FileNotFoundError:
+            raise Exception("ERROR: La clave de la Cuenta de Servicio de Google (GOOGLE_SERVICE_ACCOUNT_KEY) no está configurada en Railway ni el archivo local existe. No se puede subir a Drive.")
     else:
-        # Credenciales válidas y no expiradas, simplemente autorizar (aunque Authorize() puede ser redundante aquí)
-        print("DEBUG: Credenciales existentes y válidas.")
-        # gauth.Authorize() # No es estrictamente necesario, el objeto gauth ya está autorizado
+        try:
+            service_account_info = json.loads(service_account_info_json)
+        except json.JSONDecodeError:
+            raise Exception("ERROR: La variable GOOGLE_SERVICE_ACCOUNT_KEY no contiene un JSON válido para la cuenta de servicio.")
 
-    # Guardar siempre las credenciales después de cualquier proceso de autenticación/refresco
-    # Esto asegura que el refresh_token (si se obtuvo) se persista
+    # 2. Definir los Scopes (permisos que necesita la cuenta de servicio)
+    # 'https://www.googleapis.com/auth/drive' para acceso completo a Drive (lee, escribe, borra)
+    # 'https://www.googleapis.com/auth/drive.file' para acceso solo a los archivos creados por la app
+    SCOPES = ['https://www.googleapis.com/auth/drive']
+
+    # 3. Autenticar la cuenta de servicio
     try:
-        gauth.SaveCredentialsFile(str(creds_file_path))
-        print(f"DEBUG: Credenciales guardadas/actualizadas en {creds_file_path}")
+        credentials = service_account.Credentials.from_service_account_info(
+            service_account_info, scopes=SCOPES
+        )
+        print("DEBUG: Autenticación de Cuenta de Servicio exitosa.")
     except Exception as e:
-        print(f"ERROR: No se pudieron guardar las credenciales en {creds_file_path}: {e}")
-        # Considera cómo manejar esto, ya que el problema podría recurrir si no se guarda.
+        raise Exception(f"ERROR: Fallo al autenticar la Cuenta de Servicio: {e}")
 
-    # Inicializar Google Drive con las credenciales obtenidas/refrescadas
-    drive = GoogleDrive(gauth)
-    print("DEBUG: GoogleDrive service inicializado.")
+    # 4. Construir el servicio de Google Drive
+    drive_service = build('drive', 'v3', credentials=credentials)
+    print("DEBUG: Google Drive service inicializado.")
 
-    # --- Sigue tu lógica de subir archivo ---
+    # 5. --- Sigue tu lógica de subir archivo ---
     mime_type_excel = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     file_metadata = {'name': nombre, 'mimeType': mime_type_excel}
-    
-    try:
-        gfile = drive.CreateFile(file_metadata)
-        gfile.SetContentFile(path)
-        gfile.Upload()
-        print(f"DEBUG: Archivo '{nombre}' subido a Google Drive. ID: {gfile['id']}")
 
-        gfile.InsertPermission({
+    # Opcional: Define un folder ID para subir a una carpeta específica
+    # folder_id = 'ID_DE_TU_CARPETA_EN_GOOGLE_DRIVE'
+    # file_metadata['parents'] = [folder_id] # Asegúrate de que la cuenta de servicio tenga acceso a esta carpeta
+
+    try:
+        media = MediaFileUpload(path, mimetype=mime_type_excel)
+        gfile = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink, webContentLink').execute()
+        print(f"DEBUG: Archivo '{nombre}' subido a Google Drive. ID: {gfile.get('id')}")
+
+        # Configurar permisos para que 'cualquiera con el enlace' pueda leer
+        permission = {
             'type': 'anyone',
-            'value': 'reader',
-            'role': 'reader'
-        })
+            'role': 'reader',
+        }
+        drive_service.permissions().create(fileId=gfile.get('id'), body=permission, fields='id').execute()
         print("DEBUG: Permisos de compartir configurados a 'cualquiera con el enlace puede leer'.")
 
-        try:
-            url_descarga = gfile.GetDownloadUrl(mimetype=mime_type_excel)
-            print(f"DEBUG: URL de descarga (exportación XLSX): {url_descarga}")
-        except Exception as e:
-            print(f"ADVERTENCIA: Error al obtener URL de exportación XLSX: {e}. Volviendo a webContentLink/direct download.")
-            url_descarga = gfile.get('webContentLink')
+        url_descarga = gfile.get('webViewLink') # Esto da la URL para ver el archivo en Drive
+        if not url_descarga:
+            url_descarga = gfile.get('webContentLink') # URL de descarga directa
             if not url_descarga:
-                url_descarga = f"https://drive.google.com/uc?id={gfile['id']}&export=download"
-            print(f"DEBUG: URL de descarga fallback: {url_descarga}")
+                url_descarga = f"https://drive.google.com/uc?id={gfile.get('id')}&export=download" # Fallback
 
         print(f"DEBUG: URL final del archivo para Twilio: {url_descarga}")
         return url_descarga

@@ -29,4 +29,6 @@ Thumbs.db
 # Credenciales sensibles
 client_secrets.json
 mycreds.json
+dump.json
+google_service.json
 

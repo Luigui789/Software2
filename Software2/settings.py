@@ -12,8 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from decouple import config
-import dj_database_url
-import os
+import os , json, dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -147,12 +146,17 @@ AXES_COOLOFF_TIME = 1  # en horas (ej: 1 hora de bloqueo)
 AXES_LOCKOUT_TEMPLATE = 'login_bloqueado.html'  # plantilla personalizada para bloqueo
 AXES_FAILURE_LIMIT_BY_USERNAME = True # Para lograr el mismo comportamiento recomendado
 
-# Twilio
+# Twilio Railway Configuración
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
 TWILIO_WHATSAPP_NUMBER = os.environ.get('TWILIO_WHATSAPP_NUMBER')
 TWILIO_TEMPLATE_SID = os.environ.get('TWILIO_TEMPLATE_SID', default='')
 
+# Local configuracion
+# TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID')
+# TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN')
+# TWILIO_WHATSAPP_NUMBER = config('TWILIO_WHATSAPP_NUMBER')
+# TWILIO_TEMPLATE_SID = config('TWILIO_TEMPLATE_SID', default='')
 
 ASGI_APPLICATION = 'Software2.asgi.application'
 
@@ -175,3 +179,5 @@ else:
             },
         },
     }
+
+
