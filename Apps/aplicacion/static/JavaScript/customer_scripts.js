@@ -35,7 +35,15 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             const barberCard = this.closest('.barber-card');
             selectedBarberId = barberCard.dataset.barberId;
-            const barberName = barberCard.querySelector('h2').textContent; 
+            const barberName = barberCard.querySelector('h2').textContent;
+
+            // Validar el ID antes de continuar
+            if (!/^[a-zA-Z0-9_.-]+$/.test(selectedBarberId)) {
+                alert("ID de barbero inválido. Selecciona otro barbero.");
+                // Volver a habilitar botones si hay un error
+                document.querySelectorAll('.select-barber-button').forEach(btn => btn.disabled = false);
+                return;
+            }
 
             // Deshabilitar todos los botones para evitar múltiples clics
             document.querySelectorAll('.select-barber-button').forEach(btn => btn.disabled = true);

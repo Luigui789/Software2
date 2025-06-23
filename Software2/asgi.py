@@ -14,9 +14,8 @@ import django
 
 # 🔧 Configura e inicializa Django ANTES de importar rutas
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Software2.settings')
-print("Antes de setup")
 django.setup()
-print("Después de setup")
+
 
 import Apps.aplicacion.routing
 

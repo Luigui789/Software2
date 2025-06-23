@@ -23,10 +23,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     quadrants.forEach(quadrant => {
         const barberId = quadrant.dataset.barberId;
+        // Validar barberId antes de usarlo en la URL del WebSocket
+        if (!/^[a-zA-Z0-9_.-]+$/.test(barberId)) {
+            console.error(`ID de barbero inválido: ${barberId}. Solo se permiten letras, números, guiones, guiones bajos y puntos.`);
+            return; // No continúes con este cuadrante
+        }
         const currentNumberDisplay = quadrant.querySelector('.current-queue-number');
         const nextButton = quadrant.querySelector('.next-button');
-        const resetButton = quadrant.querySelector('.reset-button'); // <-- Obtener el botón de reset para este cuadrante
-
+        const resetButton = quadrant.querySelector('.reset-button');
+        
         // --- Configuración de WebSocket para cada barbero ---
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         console.log("✅ WebSocket abriéndose con barber_id =", barberId);
