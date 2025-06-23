@@ -164,8 +164,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [os.environ.get("REDIS_URL")],  # Usa la variable de entorno
-            "symmetric_encryption_keys": [os.environ.get("SECRET_KEY")],
+            "hosts": [os.environ.get("REDIS_URL")],  # Railway inyectará la URL interna
         },
     },
 }
