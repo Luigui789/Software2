@@ -104,7 +104,7 @@ def assign_persona_to_group_by_rol(persona_instance, request=None):
         return True # Se considera un éxito si no hay rol que asignar
 
 def index(request):
-    return render(request, 'index.html')
+    return render(request, 'aplicacion/index.html')
 
 # Vista para manejar el inicio de sesión
 
@@ -119,14 +119,14 @@ def login(request):
 
     # Si está bloqueado permanentemente
     if request.session['permanent_block']:
-        return render(request, 'login.html', {'error': 'Has superado el número máximo de intentos. Contacta al administrador para desbloquear la cuenta.'})
+        return render(request, 'aplicacion/login.html', {'error': 'Has superado el número máximo de intentos. Contacta al administrador para desbloquear la cuenta.'})
 
     # Si está bloqueado temporalmente, verifica el tiempo
     if request.session['block_until']:
         block_until = timezone.datetime.fromisoformat(request.session['block_until'])
         if timezone.now() < block_until:
             remaining = int((block_until - timezone.now()).total_seconds())
-            return render(request, 'login.html', {'error': f'Has excedido los intentos. Intenta de nuevo en {remaining} segundos.'})
+            return render(request, 'aplicacion/login.html', {'error': f'Has excedido los intentos. Intenta de nuevo en {remaining} segundos.'})
         else:
             # Desbloquea el bloqueo temporal
             request.session['block_until'] = None
@@ -148,16 +148,16 @@ def login(request):
             if request.session['login_attempts'] >= 5:
                 # Bloqueo permanente
                 request.session['permanent_block'] = True
-                return render(request, 'login.html', {'error': 'Has superado el número máximo de intentos. Contacta al administrador para desbloquear la cuenta.'})
+                return render(request, 'aplicacion/login.html', {'error': 'Has superado el número máximo de intentos. Contacta al administrador para desbloquear la cuenta.'})
             elif request.session['login_attempts'] >= 3:
                 # Bloqueo temporal de 30 segundos
                 block_until = timezone.now() + timedelta(seconds=30)
                 request.session['block_until'] = block_until.isoformat()
-                return render(request, 'login.html', {'error': 'Has excedido los intentos. Intenta de nuevo en 30 segundos.'})
+                return render(request, 'aplicacion/login.html', {'error': 'Has excedido los intentos. Intenta de nuevo en 30 segundos.'})
             else:
-                return render(request, 'login.html', {'error': 'Usuario o contraseña incorrectos'})
+                return render(request, 'aplicacion/login.html', {'error': 'Usuario o contraseña incorrectos'})
 
-    return render(request, 'login.html')
+    return render(request, 'aplicacion/login.html')
 
 def logout_view(request):
     auth_logout(request)
@@ -237,23 +237,23 @@ def administracion(request):
                     if barbero_persona and barbero_persona.nombre1 and barbero_persona.apellidoP \
             else "Barbero Desconocido"
 
-    return render(request, 'Administracion.html', {
+    return render(request, 'aplicacion/Administracion.html', {
         'ultimos_servicios': ultimos_servicios,
     })
 
 
 def equipo(request):
-    return render(request, 'Conoce_al_equipo.html')
+    return render(request, 'aplicacion/Conoce_al_equipo.html')
 
 def servicios(request):
     servicios = Servicio.objects.filter(estado=True)
-    return render(request, 'Servicios.html', {'servicios': servicios})
+    return render(request, 'aplicacion/Servicios.html', {'servicios': servicios})
 
 def quienes(request):
-    return render(request, 'Quienes_somos.html')
+    return render(request, 'aplicacion/Quienes_somos.html')
 
 def contacto(request):
-    return render(request, 'Contactanos.html')
+    return render(request, 'aplicacion/Contactanos.html')
 
 # Constantes de longitud máxima (sincronizadas con tus modelos)
 MAX_LEN_NOMBRE = 15
@@ -450,7 +450,7 @@ def AdminBarbero(request):
     # Si es una solicitud GET, renderiza la plantilla
     barberos = Barbero.objects.select_related('Empleado__persona__rol').filter(Estado=True).order_by('-id')[:10]
     roles = Rol.objects.all() # Necesitarás los roles para el select en el frontend
-    return render(request, 'admin_barbero.html', {
+    return render(request, 'aplicacion/admin_barbero.html', {
         'barberos': barberos,
         'roles': roles,
     })
@@ -659,7 +659,7 @@ def EditarBarbero(request, barbero_id):
 
     # Si es una petición GET, renderizar la página de edición con los datos actuales del barbero
     roles = Rol.objects.all() # Necesitas los roles para el select en el formulario
-    return render(request, 'Editbarbero.html', {'barbero': barbero_existente, 'roles': roles})
+    return render(request, 'aplicacion/Editbarbero.html', {'barbero': barbero_existente, 'roles': roles})
 
 @login_required(login_url='login')  # Redirige a 'login' si no está autenticado
 @rol_requerido(['Administrador', 'Barbero'])
@@ -728,7 +728,7 @@ def AdminCliente(request):
                 messages.error(request, error_msg) # Usa messages.error para mostrar los errores
             
             clientes = Cliente.objects.all().order_by('-id')[:10]
-            return render(request, 'Admin_Cliente.html', {
+            return render(request, 'aplicacion/Admin_Cliente.html', {
                 'clientes': clientes,
                 'datos': request.POST # Para pre-rellenar el formulario con los datos enviados
             })
@@ -747,7 +747,7 @@ def AdminCliente(request):
 
     # Para solicitudes GET, o si el POST no es válido inicialmente
     clientes = Cliente.objects.all().order_by('-id')[:10] # Solo los últimos 10 registros
-    return render(request, 'Admin_Cliente.html', {'clientes': clientes})
+    return render(request, 'aplicacion/Admin_Cliente.html', {'clientes': clientes})
 
 @login_required(login_url='login')  # Redirige a 'login' si no está autenticado
 @rol_requerido(['Administrador', 'Barbero'])
@@ -824,7 +824,7 @@ def EditarCliente(request, cliente_id):
             for error_msg in errores:
                 messages.error(request, error_msg) # Usa messages.error para mostrar los errores
             
-            return render(request, 'EditCliente.html', {
+            return render(request, 'aplicacion/EditCliente.html', {
                 'cliente': cliente, # Pasa el objeto cliente original para pre-rellenar datos si no se sobrescriben
                 'datos': request.POST # Para pre-rellenar el formulario con los datos enviados (incluyendo los inválidos)
             })
@@ -844,7 +844,7 @@ def EditarCliente(request, cliente_id):
 
     # Para solicitudes GET (cuando se carga la página de edición por primera vez)
     # Se renderiza el formulario con los datos existentes del cliente
-    return render(request, 'EditCliente.html', {'cliente': cliente})
+    return render(request, 'aplicacion/EditCliente.html', {'cliente': cliente})
 
 
 @login_required(login_url='login')  # Redirige a 'login' si no está autenticado
@@ -907,7 +907,7 @@ def AdminServicio(request):
                 messages.error(request, error_msg) # Usa messages.error para mostrar los errores
             
             servicios = Servicio.objects.filter(estado=True) # Se mantienen los servicios activos
-            return render(request, 'admin_servicios.html', {
+            return render(request, 'aplicacion/admin_servicios.html', {
                 'servicios': servicios,
                 'datos': request.POST # Para pre-rellenar el formulario con los datos enviados
             })
@@ -926,7 +926,7 @@ def AdminServicio(request):
 
     # Se muestran solo los servicios con estado=True por defecto
     servicios = Servicio.objects.filter(estado=True)
-    return render(request, 'admin_servicios.html', {'servicios': servicios})
+    return render(request, 'aplicacion/admin_servicios.html', {'servicios': servicios})
 
 @login_required(login_url='login')  # Redirige a 'login' si no está autenticado
 @rol_requerido(['Administrador']) # Solo los Administradores pueden editar servicios
@@ -989,7 +989,7 @@ def EditarServicio(request, servicio_id):
                 messages.error(request, error_msg) # Usa messages.error para mostrar los errores
             
             # Pasa el objeto 'servicio' original y 'datos' (request.POST) para pre-rellenar
-            return render(request, 'EditServicio.html', {
+            return render(request, 'aplicacion/EditServicio.html', {
                 'servicio': servicio, # Objeto de servicio original
                 'datos': request.POST # Datos que el usuario intentó enviar
             })
@@ -1007,7 +1007,7 @@ def EditarServicio(request, servicio_id):
 
     # Para solicitudes GET (cuando la página de edición se carga por primera vez)
     # Renderiza el formulario con los datos existentes del servicio.
-    return render(request, 'EditServicio.html', {'servicio': servicio})
+    return render(request, 'aplicacion/EditServicio.html', {'servicio': servicio})
 
 @login_required(login_url='login')  # Redirige a 'login' si no está autenticado
 @rol_requerido(['Administrador']) # Solo los Administradores pueden "remover" servicios
@@ -1127,7 +1127,7 @@ def AdminServicioRealizado(request):
             for error_msg in errores:
                 messages.error(request, error_msg)
             
-            return render(request, 'admin_ServicioRealizado.html', {
+            return render(request, 'aplicacion/admin_ServicioRealizado.html', {
                 'clientes': clientes,
                 'barberos': barberos,
                 'servicios': servicios, # Todos los servicios activos para re-mostrar
@@ -1177,7 +1177,7 @@ def AdminServicioRealizado(request):
             # Si la transacción falla, se revertirá automáticamente.
             
             # Renderizar el formulario con los datos y errores
-            return render(request, 'admin_ServicioRealizado.html', {
+            return render(request, 'aplicacion/admin_ServicioRealizado.html', {
                 'clientes': clientes,
                 'barberos': barberos,
                 'servicios': servicios,
@@ -1187,7 +1187,7 @@ def AdminServicioRealizado(request):
             })
 
     # Para solicitudes GET (cuando se carga la página por primera vez)
-    return render(request, 'admin_ServicioRealizado.html', {
+    return render(request, 'aplicacion/admin_ServicioRealizado.html', {
         'clientes': clientes,
         'barberos': barberos,
         'servicios': servicios,
@@ -1225,7 +1225,7 @@ def EditarServicioRealizado(request, servicio_realizado_id):
         # Usamos str() para asegurar que la comparación en el template sea entre strings
         servicios_seleccionados_ids_actuales = [str(s.Servicio.id) for s in servicios_antiguos_detalle]
         
-        return render(request, 'EditServRealizado.html', {
+        return render(request, 'aplicacion/EditServRealizado.html', {
             'servicio_realizado': servicio_realizado,
             'clientes': clientes,
             'barberos': barberos,
@@ -1295,7 +1295,7 @@ def EditarServicioRealizado(request, servicio_realizado_id):
             for error_msg in errores:
                 messages.error(request, error_msg)
             
-            return render(request, 'EditServRealizado.html', {
+            return render(request, 'aplicacion/EditServRealizado.html', {
                 'servicio_realizado': servicio_realizado, 
                 'clientes': clientes,
                 'barberos': barberos,
@@ -1349,7 +1349,7 @@ def EditarServicioRealizado(request, servicio_realizado_id):
         except Exception as e:
             messages.error(request, f'Ocurrió un error inesperado al actualizar el servicio: {e}')
             
-            return render(request, 'EditServRealizado.html', {
+            return render(request, 'aplicacion/EditServRealizado.html', {
                 'servicio_realizado': servicio_realizado,
                 'clientes': clientes,
                 'barberos': barberos,
@@ -1438,7 +1438,7 @@ def reporte_servicios(request):
                         'inicio': '',  
                         'fin': ''
                     }
-                    return render(request, 'reporte_servicios.html', context)
+                    return render(request, 'aplicacion/reporte_servicios.html', context)
 
                 servicios = servicios.filter(fecha__range=(inicio_date, fin_date))
 
@@ -1451,7 +1451,7 @@ def reporte_servicios(request):
                     'inicio': '', 
                     'fin': ''
                 }
-                return render(request, 'reporte_servicios.html', context)
+                return render(request, 'aplicacion/reporte_servicios.html', context)
 
     # Calcular total por servicio
     for realizado in servicios:
@@ -1464,7 +1464,7 @@ def reporte_servicios(request):
         'inicio': request.GET.get('inicio', ''),
         'fin': request.GET.get('fin', ''),
     }
-    return render(request, 'reporte_servicios.html', context)
+    return render(request, 'aplicacion/reporte_servicios.html', context)
 
 login_required(login_url='login')  # Redirige a 'login' si no está autenticado
 @rol_requerido(['Administrador'])
@@ -1497,7 +1497,7 @@ def descargar_reporte_pdf(request):
         realizado.precio_total = total
         gran_total += total
 
-    template = get_template('reporte_servicios_pdf.html')
+    template = get_template('aplicacion/reporte_servicios_pdf.html')
     context = {'servicios': servicios, 'gran_total': gran_total}
     html = template.render(context)
 
@@ -1583,7 +1583,7 @@ def reporte_grafica(request):
                         'inicio': '',
                         'fin': ''
                     }
-                    return render(request, 'reporte_grafica.html', context)
+                    return render(request, 'aplicacion/reporte_grafica.html', context)
 
                 servicios = servicios.filter(fecha__range=(inicio_date, fin_date))
 
@@ -1598,7 +1598,7 @@ def reporte_grafica(request):
                     'inicio': '',
                     'fin': ''
                 }
-                return render(request, 'reporte_grafica.html', context)
+                return render(request, 'aplicacion/reporte_grafica.html', context)
 
     # Primera gráfica: cortes por barbero
     barberos = {}
@@ -1625,7 +1625,7 @@ def reporte_grafica(request):
         'inicio': request.GET.get('inicio', ''),
         'fin': request.GET.get('fin', ''),
     }
-    return render(request, 'reporte_grafica.html', context)
+    return render(request, 'aplicacion/reporte_grafica.html', context)
 
 #===========================================================================================================================
 def generar_reporte_excel_y_guardar(servicios, filename):
@@ -1915,7 +1915,7 @@ def queue_dashboard(request):
     }
 
     # Asegúrate de que 'aplicacion/queue_dashboard.html' es la ruta correcta a tu template
-    return render(request, 'queue_dashboard.html', context)
+    return render(request, 'aplicacion/queue_dashboard.html', context)
 
 # --- Nueva vista para incrementar el número de cola ---
 @require_POST
@@ -1995,7 +1995,7 @@ def customer_queue_select(request):
         'barberos_data': barberos_data,
     }
     # Renderiza un template nuevo y específico para el cliente
-    return render(request, 'customer_queue_select.html', context)
+    return render(request, 'aplicacion/customer_queue_select.html', context)
 
 
 @require_POST # Solo permite peticiones POST
