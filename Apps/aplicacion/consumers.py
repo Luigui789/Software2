@@ -1,43 +1,79 @@
 import json
+import logging 
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from .models import BarberQueue, Barbero # Importa ambos modelos
+import re
+
+logger = logging.getLogger(__name__) 
 
 class QueueConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.barber_id = self.scope['url_route']['kwargs']['barber_id']
-        self.room_group_name = f'queue_{self.barber_id}'
-        print(f"DEBUG: room_group_name = {self.room_group_name}") # <-- Añade esto
-        print(f"DEBUG: channel_name = {self.channel_name}")
+        self.barber_id = None # Inicializa para seguridad
+        try:
+            # Intenta obtener el barber_id de los kwargs de la URL
+            self.barber_id = self.scope['url_route']['kwargs']['barber_id']
+            # Convierte a string para asegurar que no sea un int, None o algo más
+            self.barber_id = str(self.barber_id) 
+        except KeyError:
+            # Registra un error si barber_id no se encuentra en la URL
+            logger.error("ERROR: 'barber_id' no encontrado en los kwargs de la URL del WebSocket. Asegúrate de que tu routing.py lo configure y que la URL del cliente sea correcta.")
+            await self.close(code=4000) # Código de cierre personalizado para error
+            return # Detiene la ejecución del método connect
+        
+        # --- LÓGICA DE LIMPIEZA Y VALIDACIÓN DEL NOMBRE DEL CANAL/GRUPO ---
+        # Remueve cualquier caracter que no sea alfanumérico, guion, guion bajo o punto
+        # y reemplázalo con un guion. Trunca a 99 caracteres.
+        cleaned_barber_id = re.sub(r'[^a-zA-Z0-9\-_.]', '-', self.barber_id)
+        cleaned_barber_id = cleaned_barber_id[:99] # Trunca para cumplir el límite de < 100
 
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
-        await self.accept()
+        if not cleaned_barber_id: # Si después de la limpieza queda vacío
+            logger.error(f"ERROR: 'barber_id' original '{self.barber_id}' se convirtió en vacío o inválido después de la limpieza. No se puede crear un nombre de grupo válido.")
+            await self.close(code=4001) # Código de cierre personalizado para ID inválido
+            return
 
+        self.room_group_name = f'queue_{cleaned_barber_id}'
+
+        # --- Logs de depuración (¡muy importantes para ver en Railway!) ---
+        logger.info(f"DEBUG CHANNELS: Intentando conectar. original_barber_id='{self.barber_id}', cleaned_barber_id='{cleaned_barber_id}', room_group_name='{self.room_group_name}'")
+        logger.info(f"DEBUG CHANNELS: channel_name='{self.channel_name}'")
+
+        try:
+            await self.channel_layer.group_add(
+                self.room_group_name,
+                self.channel_name
+            )
+        except TypeError as e:
+            logger.critical(f"CRITICAL ERROR CHANNELS: Falló channel_layer.group_add para room_group_name='{self.room_group_name}' con error: {e}")
+            await self.close(code=4002) # Código de cierre personalizado para error de group_add
+            return
+
+        await self.accept() # Si todo lo anterior fue bien, acepta la conexión
+
+        # ... (el resto de tu código de connect) ...
         try:
             barbero_obj = await sync_to_async(Barbero.objects.get)(id=self.barber_id)
             queue_obj = await sync_to_async(BarberQueue.get_or_create_queue_for_barber)(barbero_obj)
             current_num = queue_obj.current_number
-            last_issued_num = queue_obj.last_issued_number # <-- Obtener el último emitido
+            last_issued_num = queue_obj.last_issued_number
         except Barbero.DoesNotExist:
             current_num = 0
             last_issued_num = 0
-            print(f"Barbero con ID {self.barber_id} no encontrado para la cola.")
+            logger.warning(f"Barbero con ID {self.barber_id} no encontrado para la cola. Initializing with 0.")
         except Exception as e:
             current_num = 0
             last_issued_num = 0
-            print(f"Error al obtener la cola para barbero {self.barber_id}: {e}")
+            logger.error(f"Error general al obtener la cola para barbero {self.barber_id}: {e}", exc_info=True) # exc_info=True para el traceback completo
 
         await self.send(text_data=json.dumps({
             'type': 'queue_update',
             'barber_id': self.barber_id,
             'number': current_num,
-            'last_issued_number': last_issued_num # <-- Enviar también el último emitido
+            'last_issued_number': last_issued_num
         }))
 
     async def disconnect(self, close_code):
+        logger.info(f"DEBUG CHANNELS: Desconectando del grupo {self.room_group_name} con código {close_code}")
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
