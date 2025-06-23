@@ -21,17 +21,17 @@
         <input type="checkbox" id="navbar-toggle" class="navbar-toggle">
         <label for="navbar-toggle" class="navbar-icon">&#9776;</label>
         <ul class="navbar-links">
-            <li><a href="{% url 'index' %}">INICIO</a></li>
-            <li><a href="{% url 'Equipo' %}">CONOCE AL EQUIPO</a></li>
-            <li><a href="{% url 'Quienes_Somos' %}">¿QUIENES SOMOS?</a></li>
-            <li><a href="{% url 'Contactanos' %}">CONTACTENOS</a></li>
+            <li><a href="{% url 'aplicacion:index' %}">INICIO</a></li>
+            <li><a href="{% url 'aplicacion:Equipo' %}">CONOCE AL EQUIPO</a></li>
+            <li><a href="{% url 'aplicacion:Quienes_Somos' %}">¿QUIENES SOMOS?</a></li>
+            <li><a href="{% url 'aplicacion:Contactanos' %}">CONTACTENOS</a></li>
             {% if not user.is_authenticated %}
-            <li><a href="{% url 'login' %}">INICIAR SESION</a></li>
+            <li><a href="{% url 'aplicacion:login' %}">INICIAR SESION</a></li>
             {% endif %}
             {% if user.is_authenticated %}
-            <li><a href="{% url 'customer_queue_select' %}">TURNOS</a></li>
-            <li><a href="{% url 'administracion' %}">Administración</a></li>
-            <li><a href="{% url 'logout' %}">Cerrar Sesion</a></li>
+            <li><a href="{% url 'aplicacion:customer_queue_select' %}">TURNOS</a></li>
+            <li><a href="{% url 'aplicacion:administracion' %}">Administración</a></li>
+            <li><a href="{% url 'aplicacion:logout' %}">Cerrar Sesion</a></li>
             {% endif %}
         </ul>
     </nav>
@@ -47,9 +47,9 @@
                 <div>
                     <ul>
                         <h4>BARBERIA</h4>
-                        <li><a href="{% url 'Equipo' %}">conoce al equipo</a></li>
+                        <li><a href="{% url 'aplicacion:Equipo' %}">conoce al equipo</a></li>
                         <li><a href="#">problemas?</a></li>
-                        <li><a href="{% url 'Contactanos' %}">contactanos</a></li>
+                        <li><a href="{% url 'aplicacion:Contactanos' %}">contactanos</a></li>
                     </ul>
                 </div>
                 <div>

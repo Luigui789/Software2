@@ -1,4 +1,4 @@
-{% extends "Layout2.html" %}
+{% extends "aplicacion/Layout2.html" %}
 {% load static %}
 {% block title %} Administrar cliente {% endblock %}
 
@@ -89,7 +89,7 @@
                         <td class="CuerpoTd">{{ cliente.apellidoM }}</td>
                         <td class="CuerpoTd">{{ cliente.instagram }}</td>
                         <td class="CuerpoTd">
-                            <a href="{% url 'editar_cliente' cliente.id %}"><button class="edit-btn">Editar</button></a>
+                            <a href="{% url 'aplicacion:editar_cliente' cliente.id %}"><button class="edit-btn">Editar</button></a>
                         </td>
                     </tr>
                     {% endfor %}

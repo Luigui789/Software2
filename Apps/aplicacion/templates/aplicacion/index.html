@@ -1,4 +1,4 @@
-{% extends "Layout.html" %}
+{% extends "aplicacion/Layout.html" %}
 {% load static %}
 {% block title %}Inicio de Sesión{% endblock %}
 {% block head %}
@@ -17,11 +17,11 @@
                 <p>Desde el primer corte hasta el último retoque, con tijera o máquina, clásicos o modernos, te
                     ofrecemos el
                     mejor servicio de barbería para que siempre luzcas impecable.</p>
-                <a href="{% url 'Servicios' %}"><button>SERVICIOS</button></a>
+                <a href="{% url 'aplicacion:Servicios' %}"><button>SERVICIOS</button></a>
                 <ul class="menu-links">
-                    <li><a href="{% url 'Quienes_Somos' %}">¿QUIENES SOMOS?</a></li>
-                    <li><a href="{% url 'Contactanos' %}">CONTÁCTENOS</a></li>
-                    <li><a href="{% url 'Equipo' %}">CONOCE AL EQUIPO</a></li>
+                    <li><a href="{% url 'aplicacion:Quienes_Somos' %}">¿QUIENES SOMOS?</a></li>
+                    <li><a href="{% url 'aplicacion:Contactanos' %}">CONTÁCTENOS</a></li>
+                    <li><a href="{% url 'aplicacion:Equipo' %}">CONOCE AL EQUIPO</a></li>
                 </ul>
             </div>
         </div>

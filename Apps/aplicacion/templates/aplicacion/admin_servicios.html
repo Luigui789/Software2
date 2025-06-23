@@ -1,4 +1,4 @@
-{% extends "Layout2.html" %}
+{% extends "aplicacion/Layout2.html" %}
 {% load static %}
 {% block title %} Administrar cliente {% endblock %}
 
@@ -85,9 +85,9 @@
                             {% endif %}
                         </td>
                         <td class="CuerpoTd">
-                            <a href="{% url 'editar_servicio' servicio.id %}"><button
+                            <a href="{% url 'aplicacion:editar_servicio' servicio.id %}"><button
                                     class="edit-btn">Editar</button></a>
-                            <form action="{% url 'remover_servicio' servicio.id %}" method="POST" style="display:inline;">
+                            <form action="{% url 'aplicacion:remover_servicio' servicio.id %}" method="POST" style="display:inline;">
                                 {% csrf_token %}
                                 <button type="submit" class="delete-btn" onclick="return confirm('¿Estás seguro de que quieres desactivar este servicio?');">Remover</button>
                             </form>

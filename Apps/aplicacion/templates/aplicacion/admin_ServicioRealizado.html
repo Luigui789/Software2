@@ -1,4 +1,4 @@
-{% extends "Layout2.html" %}
+{% extends "aplicacion/Layout2.html" %}
 {% load static %}
 {% block title %} Administrar cliente {% endblock %}
 
@@ -96,7 +96,7 @@
                             {% endfor %}
                         </td>
                         <td>     
-                            <form action="{% url 'editar_servicioRealizado' realizado.id %}" method="GET" style="display:inline;">
+                            <form action="{% url 'aplicacion:editar_servicioRealizado' realizado.id %}" method="GET" style="display:inline;">
                                 {% csrf_token %}
                                 <button type="submit" class="edit-btn">Editar</button>
                             </form>

@@ -1,4 +1,4 @@
-{% extends "Layout2.html" %}
+{% extends "aplicacion/Layout2.html" %}
 {% load static %}
 {% block title %}Panel de administracion {% endblock %}
 {% block head %}
@@ -12,29 +12,29 @@
 <aside class="sidebar">
     <h2>PANEL DE CONTROL</h2>
     {% if request.user.is_superuser %}
-        <a href="{% url 'AdBarbero' %}"><button>GESTIONAR BARBERO </button></a>
-        <a href="{% url 'AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>
-        <a href="{% url 'AdServicio' %}"><button>GESTIONAR SERVICIO</button></a>
-        <a href="{% url 'AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
-        <a href="{% url 'reporte_servicios' %}" target="_blank"><button>GENERAR REPORTE</button></a>
-        <a href="{% url 'reporte_graficas' %}"><button> GRAFICAS</button></a>
-        <a href="{% url 'queue_dashboard' %}"><button> TURNOS </button></a>
+        <a href="{% url 'aplicacion:AdBarbero' %}"><button>GESTIONAR BARBERO </button></a>
+        <a href="{% url 'aplicacion:AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>
+        <a href="{% url 'aplicacion:AdServicio' %}"><button>GESTIONAR SERVICIO</button></a>
+        <a href="{% url 'aplicacion:AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
+        <a href="{% url 'aplicacion:reporte_servicios' %}" target="_blank"><button>GENERAR REPORTE</button></a>
+        <a href="{% url 'aplicacion:reporte_graficas' %}"><button> GRAFICAS</button></a>
+        <a href="{% url 'aplicacion:queue_dashboard' %}"><button> TURNOS </button></a>
     {% elif request.user.rol.nombre == 'Administrador' %}
-        <a href="{% url 'AdBarbero' %}"><button>GESTIONAR BARBERO </button></a>
-        <a href="{% url 'AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>
-        <a href="{% url 'AdServicio' %}"><button>GESTIONAR SERVICIO</button></a>
-        <a href="{% url 'AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
-        <a href="{% url 'reporte_servicios' %}" target="_blank"><button>GENERAR REPORTE</button></a>
-        <a href="{% url 'reporte_graficas' %}"><button> GRAFICAS</button></a>
-        <a href="{% url 'queue_dashboard' %}"><button> TURNOS </button></a>
+        <a href="{% url 'aplicacion:AdBarbero' %}"><button>GESTIONAR BARBERO </button></a>
+        <a href="{% url 'aplicacion:AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>
+        <a href="{% url 'aplicacion:AdServicio' %}"><button>GESTIONAR SERVICIO</button></a>
+        <a href="{% url 'aplicacion:AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
+        <a href="{% url 'aplicacion:reporte_servicios' %}" target="_blank"><button>GENERAR REPORTE</button></a>
+        <a href="{% url 'aplicacion:reporte_graficas' %}"><button> GRAFICAS</button></a>
+        <a href="{% url 'aplicacion:queue_dashboard' %}"><button> TURNOS </button></a>
     {% elif request.user.rol.nombre == 'Barbero' %}
-        <a href="{% url 'AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>
-        <a href="{% url 'AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
-        <a href="{% url 'queue_dashboard' %}"><button> TURNOS </button></a>
+        <a href="{% url 'aplicacion:AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>
+        <a href="{% url 'aplicacion:AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
+        <a href="{% url 'aplicacion:queue_dashboard' %}"><button> TURNOS </button></a>
     {% elif request.user.rol.nombre == 'Aprendiz' %}
-        <a href="{% url 'queue_dashboard' %}"><button> TURNOS </button></a>
-        <a href="{% url 'AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>
-        <a href="{% url 'AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
+        <a href="{% url 'aplicacion:queue_dashboard' %}"><button> TURNOS </button></a>
+        <a href="{% url 'aplicacion:AdCliente' %}"><button>GESTIONAR CLIENTE</button></a>
+        <a href="{% url 'aplicacion:AdServicioRealizado' %}"><button>GESTIONAR SERVICIOS REALIZADOS</button></a>
     {% endif %}
 </aside>
 
