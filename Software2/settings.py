@@ -165,15 +165,18 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [(os.environ["REDIS_URL"])],
-            "symmetric_encryption_keys": [os.environ["DJANGO_SECRET_KEY"].encode()],
-            "channel_capacity": {
-                "http.request": 200,
-                "websocket.*": 1000,  # Aumenta capacidad para WebSockets
-            },
+            "hosts": [os.environ["REDIS_URL"]],
+            # COMENTA LAS SIGUIENTES DOS LÍNEAS TEMPORALMENTE:
+            # "symmetric_encryption_keys": [os.environ["SECRET_KEY"].encode()],
+            # "channel_capacity": {
+            #     "http.request": 200,
+            #     "websocket.*": 1000,
+            # },
         },
     },
 }
+if DEBUG: # Si DEBUG es True (generalmente en desarrollo), podemos usar InMemoryChannelLayer
+    CHANNEL_LAYERS["default"]["BACKEND"] = "channels.layers.InMemoryChannelLayer"
 
 #esto lo acabo de agregar 
 LOGGING = {
