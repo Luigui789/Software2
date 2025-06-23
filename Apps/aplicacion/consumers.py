@@ -1,9 +1,9 @@
-import json, re
-import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from .models import BarberQueue, Barbero
 from .utils import safe_channel_name
+import json, re
+import logging
 
 logger = logging.getLogger(__name__)
 
