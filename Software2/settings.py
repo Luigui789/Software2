@@ -27,7 +27,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure--+*p=wvy&gz1vq_wpr0zbfg9+h3xh^&38-m0x48ejt8tulyv7=')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['.railway.app', 'localhost', '127.0.0.1']
 
