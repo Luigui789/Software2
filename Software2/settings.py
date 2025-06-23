@@ -160,12 +160,13 @@ TWILIO_TEMPLATE_SID = os.environ.get('TWILIO_TEMPLATE_SID', default='')
 
 ASGI_APPLICATION = 'Software2.asgi.application'
 
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [(os.environ["REDIS_URL"])],
-            "symmetric_encryption_keys": [os.environ["SECRET_KEY"].encode()],
+            "symmetric_encryption_keys": [os.environ["DJANGO_SECRET_KEY"].encode()],
             "channel_capacity": {
                 "http.request": 200,
                 "websocket.*": 1000,  # Aumenta capacidad para WebSockets
