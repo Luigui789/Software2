@@ -173,9 +173,41 @@ else:
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379/1')], # Usa REDIS_URL para Railway
+            "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379/1')],
         },
     },
 }
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "channels": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+        },
+        "channels_redis": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+        },
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
+        # Opcional: para ver tus logs personalizados
+        "Apps.aplicacion": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+        },
+    },
+}
 
