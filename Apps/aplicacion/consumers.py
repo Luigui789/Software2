@@ -7,6 +7,10 @@ import re
 
 logger = logging.getLogger(__name__) 
 
+def safe_channel_name(name):
+    # Solo permite letras, números, guiones, guiones bajos y puntos, y limita a 99 caracteres
+    return re.sub(r'[^a-zA-Z0-9_\-\.]', '-', str(name))[:99]
+
 class QueueConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.barber_id = None
@@ -18,8 +22,7 @@ class QueueConsumer(AsyncWebsocketConsumer):
             await self.close(code=4000)
             return
         
-        cleaned_barber_id = re.sub(r'[^a-zA-Z0-9\-_.]', '-', self.barber_id)
-        cleaned_barber_id = cleaned_barber_id[:99]
+        cleaned_barber_id = safe_channel_name(self.barber_id)
 
         if not cleaned_barber_id:
             logger.error(f"ERROR: 'barber_id' original '{self.barber_id}' se convirtió en vacío o inválido después de la limpieza. No se puede crear un nombre de grupo válido.", exc_info=True)
@@ -58,10 +61,8 @@ class QueueConsumer(AsyncWebsocketConsumer):
             
         except Barbero.DoesNotExist:
             logger.warning(f"Barbero con ID {self.barber_id} no encontrado para la cola. Inicializando con 0.", exc_info=True)
-            # current_num y last_issued_num ya están en 0
         except Exception as e:
             logger.error(f"ERROR GENERAL al obtener la cola para barbero {self.barber_id}: {e}", exc_info=True)
-            # current_num y last_issued_num ya están en 0
         
         try:
             await self.send(text_data=json.dumps({
@@ -74,7 +75,6 @@ class QueueConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error(f"ERROR al enviar el estado inicial de la cola al cliente para barbero {self.barber_id}: {e}", exc_info=True)
             await self.close(code=4003)
-
 
     async def disconnect(self, close_code):
         logger.info(f"DEBUG CHANNELS: Desconectando del grupo {self.room_group_name} con código {close_code}")
@@ -103,7 +103,6 @@ class QueueConsumer(AsyncWebsocketConsumer):
             if barber_id:
                 await self.reset_barber_queue(barber_id)
             else:
-                # Reemplazado print por logger.error
                 logger.error("Error: Se recibió un mensaje de reinicio sin barber_id.") 
                 await self.send(text_data=json.dumps({
                     'type': 'error',
@@ -117,11 +116,14 @@ class QueueConsumer(AsyncWebsocketConsumer):
 
             await sync_to_async(queue_obj.reset_queue)() 
 
-            # ¡Cambiado de print a logger.info!
             logger.info(f"Contador y último número emitido para barbero {barber_id} reseteado a 0.")
 
+            # Usa el mismo método de sanitización para el nombre del grupo
+            cleaned_barber_id = safe_channel_name(barber_id)
+            room_group_name = f'queue_{cleaned_barber_id}'
+
             await self.channel_layer.group_send(
-                self.room_group_name,
+                room_group_name,
                 {
                     'type': 'queue_update',
                     'barber_id': barber_id,
@@ -131,14 +133,12 @@ class QueueConsumer(AsyncWebsocketConsumer):
             )
 
         except Barbero.DoesNotExist:
-            # ¡Cambiado de print a logger.error!
             logger.error(f"Error: Barbero con ID {barber_id} no encontrado para resetear la cola.", exc_info=True)
             await self.send(text_data=json.dumps({
                 'type': 'error',
                 'message': f"Barbero {barber_id} no encontrado para resetear la cola."
             }))
         except Exception as e:
-            # ¡Cambiado de print a logger.error con exc_info=True!
             logger.error(f"Error general al resetear la cola del barbero {barber_id}: {e}", exc_info=True)
             await self.send(text_data=json.dumps({
                 'type': 'error',
