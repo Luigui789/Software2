@@ -45,7 +45,7 @@ def rol_requerido(roles_permitidos):
             # 1. Verificar si el usuario está autenticado al principio
             if not request.user.is_authenticated:
                 messages.error(request, "Debes iniciar sesión para acceder a esta página.")
-                return redirect('login') # Redirigir a login si no está autenticado
+                return redirect('aplicacion:login') # Redirigir a login si no está autenticado
 
             # 2. Permitir acceso a superusuarios primero
             if request.user.is_superuser:
@@ -55,12 +55,12 @@ def rol_requerido(roles_permitidos):
             except Persona.DoesNotExist:
                 # El usuario autenticado no tiene un registro de Persona asociado.
                 messages.error(request, "Tu cuenta de usuario no está asociada a un perfil de persona válido.")
-                return redirect('login') # O a una página de error/perfil incompleto
+                return redirect('aplicacion:login') # O a una página de error/perfil incompleto
 
             # 3. Verificar si la persona tiene un rol asignado
             if not persona.rol:
                 messages.warning(request, "Tu cuenta de usuario no tiene un rol asignado. Acceso denegado.")
-                return redirect('login') # O a una página donde se pueda asignar un rol
+                return redirect('aplicacion:login') # O a una página donde se pueda asignar un rol
 
             # 4. Verificar el rol
             rol_usuario = persona.rol.nombre.lower()
@@ -68,7 +68,7 @@ def rol_requerido(roles_permitidos):
                 return view_func(request, *args, **kwargs)
             else:
                 messages.error(request, "No tienes los permisos necesarios para acceder a esta página.")
-                return redirect('index') # O a una página de "acceso denegado"
+                return redirect('aplicacion:index') # O a una página de "acceso denegado"
         return _wrapped_view
     return decorator
 
@@ -141,7 +141,7 @@ def login(request):
             request.session['login_attempts'] = 0
             request.session['block_until'] = None
             request.session['permanent_block'] = False
-            return redirect('index')
+            return redirect('aplicacion:index')
         else:
             request.session['login_attempts'] += 1
 
@@ -161,7 +161,7 @@ def login(request):
 
 def logout_view(request):
     auth_logout(request)
-    return redirect('login')
+    return redirect('aplicacion:login')
 
 @login_required(login_url='login')
 @rol_requerido(['Administrador', 'Barbero', 'Aprendiz'])
@@ -207,7 +207,7 @@ def administracion(request):
         # o si hay algún problema inesperado con request.user.rol,
         # ya que el decorador @rol_requerido ya debería haber filtrado.
         messages.error(request, "Acceso no autorizado para tu rol.")
-        return redirect('index') # O a una página de acceso denegado
+        return redirect('aplicacion:index') # O a una página de acceso denegado
 
     # --- Optimización de consultas con select_related y prefetch_related ---
     ultimos_servicios = ultimos_servicios_query.select_related(
@@ -481,22 +481,22 @@ def Removerbarbero(request, barbero_id):
             messages.success(request, f'Barbero "{barbero.Empleado.persona.username if hasattr(barbero.Empleado, "persona") else barbero.id}" y su cuenta de usuario han sido desactivados exitosamente.')
             
             # Redirigir a la vista de administración de barberos
-            return redirect('AdBarbero') 
+            return redirect('aplicacion:AdBarbero') 
 
         except Barbero.DoesNotExist:
             # Esto ya lo maneja get_object_or_404, pero se añade un mensaje por claridad
             messages.error(request, 'El barbero especificado no fue encontrado.')
-            return redirect('AdBarbero') # Redirigir de vuelta con el error
+            return redirect('aplicacion:AdBarbero') # Redirigir de vuelta con el error
 
         except Exception as e:
             # Capturar cualquier otro error inesperado durante el proceso
             messages.error(request, f'Ocurrió un error inesperado al desactivar el barbero: {str(e)}')
-            return redirect('AdBarbero')
+            return redirect('aplicacion:AdBarbero')
 
     else:
         # Si la petición no es POST, se considera un error o un intento de acceso directo
         messages.warning(request, "Acceso no permitido. Por favor, utiliza el formulario de desactivación.")
-        return redirect('AdBarbero') # O podrías devolver un HttpResponseNotAllowed(['POST'])
+        return redirect('aplicacion:AdBarbero') # O podrías devolver un HttpResponseNotAllowed(['POST'])
 
 @login_required(login_url='login')
 @rol_requerido(['Administrador']) # Solo administradores pueden editar barberos
@@ -743,7 +743,7 @@ def AdminCliente(request):
             correo=correo
         )
         messages.success(request, 'Cliente agregado exitosamente!') # Mensaje de éxito
-        return redirect('AdCliente')
+        return redirect('aplicacion:AdCliente')
 
     # Para solicitudes GET, o si el POST no es válido inicialmente
     clientes = Cliente.objects.all().order_by('-id')[:10] # Solo los últimos 10 registros
@@ -840,7 +840,7 @@ def EditarCliente(request, cliente_id):
         cliente.save() # Guarda los cambios en la base de datos
 
         messages.success(request, 'Cliente actualizado exitosamente!') # Mensaje de éxito
-        return redirect('AdCliente') # Redirige a la página que muestra la lista de clientes
+        return redirect('aplicacion:AdCliente') # Redirige a la página que muestra la lista de clientes
 
     # Para solicitudes GET (cuando se carga la página de edición por primera vez)
     # Se renderiza el formulario con los datos existentes del cliente
@@ -922,7 +922,7 @@ def AdminServicio(request):
             estado=True # Asumo que se crean como activos
         )
         messages.success(request, 'Servicio agregado exitosamente!') # Mensaje de éxito
-        return redirect('AdServicio') # Redirige a la página de administración de servicios
+        return redirect('aplicacion:AdServicio') # Redirige a la página de administración de servicios
 
     # Se muestran solo los servicios con estado=True por defecto
     servicios = Servicio.objects.filter(estado=True)
@@ -1003,7 +1003,7 @@ def EditarServicio(request, servicio_id):
         servicio.save() # Guarda los cambios en la base de datos
 
         messages.success(request, 'Servicio actualizado exitosamente!') # Mensaje de éxito
-        return redirect('AdServicio') # Redirige a la página de administración de servicios
+        return redirect('aplicacion:AdServicio') # Redirige a la página de administración de servicios
 
     # Para solicitudes GET (cuando la página de edición se carga por primera vez)
     # Renderiza el formulario con los datos existentes del servicio.
@@ -1029,11 +1029,11 @@ def Removerservicio(request, servicio_id):
             messages.error(request, f'Ocurrió un error al desactivar el servicio "{servicio.nombre}": {e}')
         
         # Siempre redirigir a la página de administración de servicios después de intentar la acción
-        return redirect('AdServicio')
+        return redirect('aplicacion:AdServicio')
     
     # Si la solicitud no es POST (es decir, alguien intentó acceder vía GET directamente a esta URL),
     messages.warning(request, "Acceso no permitido. Por favor, utiliza el formulario de desactivación.")
-    return redirect('AdServicio')
+    return redirect('aplicacion:AdServicio')
 
 
 @login_required(login_url='login')
@@ -1169,7 +1169,7 @@ def AdminServicioRealizado(request):
                 barbero_obj.save()
 
             messages.success(request, 'Servicio realizado registrado exitosamente y comisiones actualizadas!')
-            return redirect('AdServicioRealizado')
+            return redirect('aplicacion:AdServicioRealizado')
 
         except Exception as e:
             # Si ocurre algún error durante la transacción (ej. problemas de DB, lógica inesperada)
@@ -1344,7 +1344,7 @@ def EditarServicioRealizado(request, servicio_realizado_id):
                 barbero_para_adicion.save()
 
             messages.success(request, 'Servicio realizado actualizado exitosamente y comisiones recalculadas.')
-            return redirect('AdServicioRealizado')
+            return redirect('aplicacion:AdServicioRealizado')
 
         except Exception as e:
             messages.error(request, f'Ocurrió un error inesperado al actualizar el servicio: {e}')
@@ -1785,17 +1785,17 @@ def enviar_reporte_excel_whatsapp(request):
 
         if not numero:
             messages.error(request, "Número de WhatsApp no proporcionado.")
-            return redirect('reporte_servicios')
+            return redirect('aplicacion:reporte_servicios')
 
         try:
             # Asegúrate que filtrar_servicios_por_fecha esté definida y funcione correctamente
             servicios = filtrar_servicios_por_fecha(request)
             if not servicios:
                 messages.warning(request, "No se encontraron servicios para generar el reporte.")
-                return redirect('reporte_servicios')
+                return redirect('aplicacion:reporte_servicios')
         except Exception as e:
             messages.error(request, f"Error al filtrar servicios: {e}")
-            return redirect('reporte_servicios')
+            return redirect('aplicacion:reporte_servicios')
 
         filename = f'reporte_servicios_{timezone.now().strftime("%Y%m%d%H%M%S")}.xlsx'
         file_path = None
@@ -1807,7 +1807,7 @@ def enviar_reporte_excel_whatsapp(request):
             messages.info(request, f'Reporte Excel "{filename}" generado localmente.')
         except Exception as e:
             messages.error(request, f'Error al generar el reporte Excel: {e}')
-            return redirect('reporte_servicios') 
+            return redirect('aplicacion:reporte_servicios') 
 
         # --- ETAPA 2: Subir a Google Drive y obtener el URL público ---
         try:
@@ -1820,7 +1820,7 @@ def enviar_reporte_excel_whatsapp(request):
             # Limpiar el archivo local si la subida falla
             if file_path and os.path.exists(file_path):
                 os.remove(file_path)
-            return redirect('reporte_servicios') 
+            return redirect('aplicacion:reporte_servicios') 
 
         # --- ETAPA 3: Enviar ENLACE por WhatsApp ---
         try:
@@ -1837,7 +1837,7 @@ def enviar_reporte_excel_whatsapp(request):
             except Exception as e:
                 print(f"Advertencia: No se pudo eliminar el archivo local '{file_path}': {e}")
 
-    return redirect('reporte_servicios')
+    return redirect('aplicacion:reporte_servicios')
 
 #============================================================================================================================
 # Contador de turnos con WebSocket
