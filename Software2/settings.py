@@ -27,7 +27,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure--+*p=wvy&gz1vq_wpr0zbfg9+h3xh^&38-m0x48ejt8tulyv7=')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['.railway.app', 'localhost', '127.0.0.1']
 
@@ -173,11 +173,11 @@ else:
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379/1')],
+            "hosts": [os.environ.get('REDIS_URL', 'redis://default:YAOXQudwDfZzjStoVgIIzEdcFfeOQOJe@redis.railway.internal:6379')],
         },
     },
 }
-
+#esto lo acabo de agregar 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
