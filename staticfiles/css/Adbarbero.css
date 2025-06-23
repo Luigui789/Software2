@@ -1,0 +1,308 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+.container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    
+}
+
+.container-form{
+    max-width: 900px;
+    height: 500px;
+    display: flex;
+    border: solid 1px  #9e754a;
+    border-radius: 15px;
+    box-shadow: 0 5px 7px rgba(0, 0, 0, .1);
+    transition: all 1s ease;
+    margin: 10px;
+}
+
+.information{
+    width: 45%;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    background-color: #FFFCFC;
+    border-top-left-radius: 15px; ;
+    border-bottom-left-radius: 15px ;
+}
+
+.info-child{
+    width: 100%;
+    padding: 0 20px;
+}
+.info-child h2{
+    font-size: 2.5rem;
+    color: #40270E;
+
+}
+
+.info-child p{
+    margin: 15px 0;
+    color: #40270E;
+}
+
+/* .info-child input{
+    background-color: transparent;
+    outline: none;
+    border: solid 2px #AE7435;
+    border-radius: 15px;
+    padding: 10px 20px;
+    color: #AE7435;
+    cursor: pointer;
+    transition: background-color 0.5s ease;
+}
+
+.info-child input:hover{
+    background-color: #B3B1A9;
+    color: #AE7435;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .1);
+} */
+
+.form-information{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60%;
+    text-align: center;
+    background-color: #978870;
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+
+.form-information child{
+    padding: 0 30px;
+}
+.info-child input[type="button"]{
+    background-color: #9e754a;
+    color: #fff;
+    border-radius: 15px;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .1);
+}
+.info-child input[type="button"]:hover{
+    background-color: #775026;
+    transition: background-color 0.5s ease;
+}
+
+.form-information-child h2{
+    font-size: 2rem;
+    color: black;
+    padding-top: 1rem;
+}
+.form-information-child p{
+color: #555;
+}
+
+.form{
+    margin: 20px 0 0 0 ;
+
+}
+
+.form label{
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    border-radius: 15px; 
+    background-color: #fff;
+    padding: 0 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .1);
+}
+
+.form label input{
+    width: 100%;
+    padding: 10px ;
+    background-color: #fff;
+    border: none;
+    outline: none;
+    border-radius:15px ;
+    color: #333;
+
+}
+.form label select{
+    width: 100%;
+    padding: 10px ;
+    background-color: #fff;
+    border: none;
+    outline: none;
+    border-radius:15px ;
+    color: #333;
+
+}
+.form label i{
+    color: #000000;    
+}
+
+.form input[type="button"]{
+    background-color: #9e754a;
+    color: #fff;
+    border-radius: 15px;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .1);
+}
+.form input[type="button"]:hover{
+    background-color: #775026;
+    transition: background-color 0.5s ease;
+}
+.form input[type="submit"]{
+    background-color: #9e754a;
+    color: #fff;
+    border-radius: 15px;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .1);
+}
+.form input[type="submit"]:hover{
+    background-color: #775026;
+    transition: background-color 0.5s ease;
+}
+.Hide {
+    position: absolute;
+    transform: translateY(-300%);
+}
+
+@media screen and (max-width:750px ) {
+    html{
+        font-size: 12px;
+    }
+    
+}
+@media screen and (max-width:580x ) {
+    html{
+        font-size: 10px;
+    }
+    .container-form{
+        flex-direction: column;
+        height: auto;
+    }
+    .information{
+        width: 100%;
+        padding: 20px;
+        border-bottom-left-radius: 20px;
+        border-top-right-radius: 20px;
+        border-bottom-left-radius: 0px;
+        border-top-right-radius: 0px;
+    }
+    .form-information{
+        width: 100%;
+        padding: 20px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 20px;
+    }
+}
+
+/* tabla de datos de los barberos */
+
+/* Centrar y limitar el ancho del panel */
+.panel-barberos {
+    max-width: 900px;      /* Puedes ajustar el ancho máximo */
+    margin: 40px auto;     /* Centrado horizontal y separación arriba/abajo */
+    background: #978870;
+    border-radius: 10px;
+    padding: 2rem 1rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    margin-bottom: 10px;
+}
+.preview {
+    background:#B3B1A9;;
+    padding: 0.2rem;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    padding: 10px;
+}
+.table-section {
+    overflow-x: auto;
+}
+
+table {
+    width: 90%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    
+}
+th, td {
+    padding: 0.7rem;
+    text-align: left;
+    
+}
+th {
+    
+    color: #40270E;
+    background-color: #B3B1A9;
+    border-radius: 3px;
+}
+td {
+    
+    color: #fff;
+    background-color: #835527;
+    border-radius: 2px;
+}
+.edit-btn{
+    background: #F0CF4D;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    padding: 6px 12px;
+    margin-top: 5px;
+    margin-right: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.delete-btn {
+    background: #e73c3c;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    padding: 6px 12px;
+    margin-top: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+}	
+.edit-btn:hover { background: #EDB02F; }
+.delete-btn:hover { background: #ff0808; }
+
+.estado-dot {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    margin: 0 auto;
+    justify-content: center;
+    text-align: center;
+}
+.estado-activo {
+    background: #4CAF50; /* verde */
+}
+.estado-inactivo {
+    background: #e53935; /* rojo */
+}
+
+/* Responsive para panel */
+@media (max-width: 900px) {
+    .main {
+        flex-direction: column;
+        margin: 1rem;
+    }
+    .sidebar, .content {
+        max-width: 100%;
+        min-width: 0;
+    }
+}

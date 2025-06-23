@@ -7,6 +7,8 @@ class QueueConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.barber_id = self.scope['url_route']['kwargs']['barber_id']
         self.room_group_name = f'queue_{self.barber_id}'
+        print(f"DEBUG: room_group_name = {self.room_group_name}") # <-- Añade esto
+        print(f"DEBUG: channel_name = {self.channel_name}")
 
         await self.channel_layer.group_add(
             self.room_group_name,

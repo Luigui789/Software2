@@ -1,0 +1,88 @@
+
+.main {
+    display: flex;
+    gap: 2rem;
+    margin: 2rem;
+    flex-wrap: wrap;
+}
+.sidebar {
+    background: #B3B1A9;
+    padding: 1rem;
+    border-radius: 10px;
+    min-width: 250px;
+    flex: 1 1 250px;
+    max-width: 300px;
+}
+.sidebar h2 {
+    color: #40270E;
+    margin-bottom: 1rem;
+}
+.sidebar button {
+    width: 100%;
+    margin-bottom: 1rem;
+    background: #AE7435;
+    color: #222;
+    border: none;
+    padding: 0.8rem;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.sidebar button:hover {
+    background: #d38f46;
+}
+
+.content {
+    background: #978870;
+    padding: 1rem;
+    border-radius: 10px;
+    flex: 3 1 400px;
+    min-width: 300px;
+    color: #40270E;
+}
+.preview {
+    background:#B3B1A9;;
+    padding: 0.2rem;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+}
+.table-section {
+    overflow-x: auto;
+    
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    
+}
+th, td {
+    padding: 0.7rem;
+    text-align: left;
+    
+}
+th {
+    
+    color: #40270E;
+    background-color: #978870;
+}
+td {
+    
+    color: #fff;
+    background-color: #4b2f14;
+    border-radius: 2px;
+}
+
+/* Responsive para panel */
+@media (max-width: 450px) {
+    .main {
+        flex-direction: column;
+        margin: 1rem;
+    }
+    .sidebar, .content {
+        max-width: 100%;
+        min-width: 0;
+    }
+}
