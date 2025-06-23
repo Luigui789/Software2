@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         currentBarberSocket.close(); // Cerrar conexión anterior si existe
                     }
                     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                    console.log("✅ WebSocket abriéndose con barber_id =", selectedBarberId);
                     currentBarberSocket = new WebSocket(
                         protocol + '//' + window.location.host + `/ws/queue/${selectedBarberId}/`
                     );

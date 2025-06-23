@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // --- Configuración de WebSocket para cada barbero ---
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        console.log("✅ WebSocket abriéndose con barber_id =", barberId);
         const socket = new WebSocket( // <-- Esta es la variable 'socket' para este barbero
             protocol + '//' + window.location.host + `/ws/queue/${barberId}/`
         );
