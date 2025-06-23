@@ -160,23 +160,16 @@ TWILIO_TEMPLATE_SID = os.environ.get('TWILIO_TEMPLATE_SID', default='')
 
 ASGI_APPLICATION = 'Software2.asgi.application'
 
-
-if DEBUG:
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels.layers.InMemoryChannelLayer"
-        }
-    }
-else:
-    # Para producción (cuando DEBUG es False)
-    CHANNEL_LAYERS = {
+CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [os.environ.get('REDIS_URL', 'redis://default:YAOXQudwDfZzjStoVgIIzEdcFfeOQOJe@redis.railway.internal:6379')],
+            "hosts": [os.environ.get("REDIS_URL")],  # Usa la variable de entorno
+            "symmetric_encryption_keys": [os.environ.get("SECRET_KEY")],
         },
     },
 }
+
 #esto lo acabo de agregar 
 LOGGING = {
     "version": 1,
