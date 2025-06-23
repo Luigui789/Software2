@@ -164,9 +164,12 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [os.environ.get("REDIS_URL")],  # Usa la URL interna de Railway
-            # Opcional: añade esto si necesitas encriptación
-            "symmetric_encryption_keys": [os.environ.get("SECRET_KEY").encode()] if os.environ.get("SECRET_KEY") else [],
+            "hosts": [(os.environ["REDIS_URL"])],
+            "symmetric_encryption_keys": [os.environ["SECRET_KEY"].encode()],
+            "channel_capacity": {
+                "http.request": 200,
+                "websocket.*": 1000,  # Aumenta capacidad para WebSockets
+            },
         },
     },
 }

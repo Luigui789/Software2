@@ -1,4 +1,4 @@
-import json
+import json, re
 import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
@@ -18,6 +18,12 @@ class QueueConsumer(AsyncWebsocketConsumer):
                 logger.error(f"Invalid barber_id: {self.barber_id}")
                 await self.close(code=4001)
                 return
+            if len(self.room_group_name) > 100:
+                self.room_group_name = self.room_group_name[:100]
+
+        # Verifica que el group name sea válido
+            if not re.match(r'^[a-zA-Z0-9\-_\.]+$', self.room_group_name):
+                raise ValueError(f"Invalid group name: {self.room_group_name}")
 
             # 2. Crear nombre de grupo seguro
             self.room_group_name = f'queue_{cleaned_barber_id}'
