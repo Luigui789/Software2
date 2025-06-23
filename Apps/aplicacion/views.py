@@ -3,6 +3,7 @@ import openpyxl
 import os
 import re
 
+from .utils import safe_channel_name
 from django.conf import settings
 from django.shortcuts import render,redirect, get_object_or_404
 from django.contrib import messages
@@ -1939,7 +1940,7 @@ def increment_served_queue(request): # Renombrada
 
         # Notificar a los clientes a través de WebSocket
         channel_layer = get_channel_layer()
-        room_group_name = f'queue_{barber_id}'
+        room_group_name = f'queue_{safe_channel_name(barber_id)}'
         async_to_sync(channel_layer.group_send)(
             room_group_name,
             {
@@ -2019,7 +2020,7 @@ def issue_customer_ticket(request):
 
         # Notifica a través de WebSocket (para actualizar el dashboard de barberos y otros clientes)
         channel_layer = get_channel_layer()
-        room_group_name = f'queue_{barber_id}'
+        room_group_name = f'queue_{safe_channel_name(barber_id)}'  # <-- Sanitiza aquí
         async_to_sync(channel_layer.group_send)(
             room_group_name,
             {

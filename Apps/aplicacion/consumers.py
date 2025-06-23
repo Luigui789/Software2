@@ -3,13 +3,9 @@ import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from .models import BarberQueue, Barbero 
-import re
+from .utils import safe_channel_name  # Asegúrate de que esta función esté definida en utils.py
 
 logger = logging.getLogger(__name__) 
-
-def safe_channel_name(name):
-    # Solo permite letras, números, guiones, guiones bajos y puntos, y limita a 99 caracteres
-    return re.sub(r'[^a-zA-Z0-9_\-\.]', '-', str(name))[:99]
 
 class QueueConsumer(AsyncWebsocketConsumer):
     async def connect(self):
