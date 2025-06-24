@@ -138,7 +138,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'staticfiles'), # Asegúrate de tener esta línea si tienes una carpeta 'static' en la raíz
     # Puedes añadir más si tienes otras carpetas 'static' fuera de las apps
 ]
 
