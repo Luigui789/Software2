@@ -48,10 +48,10 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
     'django.contrib.staticfiles',
     'Apps.aplicacion',
     'channels',
-    'daphne',
     'axes',
 ]
 
@@ -138,7 +138,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'), # Asegúrate de tener esta línea si tienes una carpeta 'static' en la raíz
+    os.path.join(BASE_DIR, 'staticfiles'), # Asegúrate de tener esta línea si tienes una carpeta 'static' en la raíz
     # Puedes añadir más si tienes otras carpetas 'static' fuera de las apps
 ]
 
@@ -164,16 +164,16 @@ AXES_LOCKOUT_TEMPLATE = 'login_bloqueado.html'  # plantilla personalizada para b
 AXES_FAILURE_LIMIT_BY_USERNAME = True # Para lograr el mismo comportamiento recomendado
 
 # Twilio Railway Configuración
-# TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
-# TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
-# TWILIO_WHATSAPP_NUMBER = os.environ.get('TWILIO_WHATSAPP_NUMBER')
-# TWILIO_TEMPLATE_SID = os.environ.get('TWILIO_TEMPLATE_SID', default='')
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
+TWILIO_WHATSAPP_NUMBER = os.environ.get('TWILIO_WHATSAPP_NUMBER')
+TWILIO_TEMPLATE_SID = os.environ.get('TWILIO_TEMPLATE_SID', default='')
 
 # Local configuracion
-TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN')
-TWILIO_WHATSAPP_NUMBER = config('TWILIO_WHATSAPP_NUMBER')
-TWILIO_TEMPLATE_SID = config('TWILIO_TEMPLATE_SID', default='')
+# TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID')
+# TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN')
+# TWILIO_WHATSAPP_NUMBER = config('TWILIO_WHATSAPP_NUMBER')
+# TWILIO_TEMPLATE_SID = config('TWILIO_TEMPLATE_SID', default='')
 
 ASGI_APPLICATION = 'Software2.asgi.application'
 
