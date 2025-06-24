@@ -26,13 +26,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure--+*p=wvy&gz1vq_wpr0zbfg9+h3xh^&38-m0x48ejt8tulyv7=')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
+DEBUG = False
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://mojicasbarbershop.onrender.com',
+    # Si tienes otros subdominios o dominios personalizados, añádelos aquí también.
+    # Por ejemplo, si usas www.tudominio.com, también lo pondrías:
+    # 'https://www.tudominio.com',
+]
 ALLOWED_HOSTS = [
-    '.onrender.com',  # Permite todos los subdominios de Render
+    '.onrender.com', # Permite todos los subdominios de Render
     'localhost',
     '127.0.0.1'
 ]
+
 
 # O mejor aún, con configuración dinámica para Render:
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
