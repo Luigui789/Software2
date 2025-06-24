@@ -44,17 +44,17 @@
 <h1>Reporte de Servicios Realizados</h1>
 
 <div class="report-buttons-container">
-    <a href="{% url 'descargar_reporte_pdf' %}?filtro={{ filtro }}{% if inicio %}&inicio={{ inicio }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}"
+    <a href="{% url 'aplicacion:descargar_reporte_pdf' %}?filtro={{ filtro }}{% if inicio %}&inicio={{ inicio }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}"
         target="_blank">
         <button class="btn-pdf">📄 Descargar PDF</button> 
     </a>
 
-    <a href="{% url 'descargar_reporte_excel' %}?filtro={{ filtro }}{% if inicio %}&inicio={{ inicio }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}"
+    <a href="{% url 'aplicacion:descargar_reporte_excel' %}?filtro={{ filtro }}{% if inicio %}&inicio={{ inicio }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}"
         target="_blank">
         <button class="btn-excel">📊 Descargar Excel</button>
     </a>
 
-    <form method="POST" action="{% url 'enviar_reporte_excel_whatsapp' %}">
+    <form method="POST" action="{% url 'aplicacion:enviar_reporte_excel_whatsapp' %}">
         {% csrf_token %}
         <input type="hidden" name="numero" value="+50577027337"> <input type="hidden" name="filtro" value="{{ filtro }}">
         <button type="submit" class="btn-whatsapp"><i class='bx bxl-whatsapp'></i>Enviar Excel por WhatsApp</button> 

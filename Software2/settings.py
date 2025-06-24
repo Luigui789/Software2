@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure--+*p=wvy&gz1vq_wpr0zbfg9+h3xh^&38-m0x48ejt8tulyv7=')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = [
     '.onrender.com',  # Permite todos los subdominios de Render
@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Apps.aplicacion',
     'channels',
+    'daphne',
     'axes',
 ]
 
@@ -163,21 +164,22 @@ AXES_LOCKOUT_TEMPLATE = 'login_bloqueado.html'  # plantilla personalizada para b
 AXES_FAILURE_LIMIT_BY_USERNAME = True # Para lograr el mismo comportamiento recomendado
 
 # Twilio Railway Configuración
-TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
-TWILIO_WHATSAPP_NUMBER = os.environ.get('TWILIO_WHATSAPP_NUMBER')
-TWILIO_TEMPLATE_SID = os.environ.get('TWILIO_TEMPLATE_SID', default='')
+# TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
+# TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
+# TWILIO_WHATSAPP_NUMBER = os.environ.get('TWILIO_WHATSAPP_NUMBER')
+# TWILIO_TEMPLATE_SID = os.environ.get('TWILIO_TEMPLATE_SID', default='')
 
 # Local configuracion
-# TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID')
-# TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN')
-# TWILIO_WHATSAPP_NUMBER = config('TWILIO_WHATSAPP_NUMBER')
-# TWILIO_TEMPLATE_SID = config('TWILIO_TEMPLATE_SID', default='')
+TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN')
+TWILIO_WHATSAPP_NUMBER = config('TWILIO_WHATSAPP_NUMBER')
+TWILIO_TEMPLATE_SID = config('TWILIO_TEMPLATE_SID', default='')
 
 ASGI_APPLICATION = 'Software2.asgi.application'
 
 
 # Configuración de Redis para producción
+
 if not DEBUG:
     CHANNEL_LAYERS = {
         "default": {
@@ -204,6 +206,8 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
+
 
 #esto lo acabo de agregar 
 LOGGING = {

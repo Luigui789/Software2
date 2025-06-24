@@ -8,20 +8,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const yourTicketNumberSpan = document.getElementById('your-ticket-number');
     const currentTicketNumberDisplaySpan = document.getElementById('current-ticket-number-display');
     const assignedBarberNameSpan = document.getElementById('assigned-barber-name');
-    const currentBarberNameDisplaySpan = document.getElementById('current-barber-name-display'); // Para el display actual
+    const currentBarberNameDisplaySpan = document.getElementById('current-barber-name-display');
 
     let currentBarberSocket = null; // Guardará la conexión WebSocket para el barbero seleccionado
     let selectedBarberId = null; // Guarda el ID del barbero seleccionado
 
     // Función auxiliar para obtener el token CSRF desde la cookie
-    // (Esta es la forma estándar recomendada por la documentación de Django)
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
             const cookies = document.cookie.split(';');
             for (let i = 0; i < cookies.length; i++) {
                 const cookie = cookies[i].trim();
-                // Does this cookie string begin with the name we want?
                 if (cookie.substring(0, name.length + 1) === (name + '=')) {
                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                     break;
@@ -31,6 +29,59 @@ document.addEventListener('DOMContentLoaded', function() {
         return cookieValue;
     }
 
+    // Función para configurar y conectar el WebSocket del cliente
+    function setupCustomerSocket(barberId) {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const socketUrl = protocol + window.location.host + '/ws/queue/' + barberId + '/';
+        console.log(`✅ Cliente: Intentando conectar WebSocket para barbero ${barberId} a ${socketUrl}`);
+
+        const socket = new WebSocket(socketUrl);
+
+        socket.onopen = function(e) {
+            console.log(`Cliente: WebSocket para barbero ${barberId} conectado.`);
+        };
+
+        socket.onmessage = function(e) {
+            const wsData = JSON.parse(e.data);
+            if (wsData.type === 'queue_update' && wsData.barber_id == selectedBarberId) {
+                // Actualizar el número actual siendo atendido
+                currentTicketNumberDisplaySpan.textContent = wsData.number;
+                console.log(`Cliente: Actualización en vivo. Barbero ${selectedBarberId} número actual: ${wsData.number}. Último ticket emitido: ${wsData.last_issued_number}`);
+            } else if (wsData.type === 'error') {
+                console.error(`Cliente: Error del servidor para barbero ${selectedBarberId}: ${wsData.message}`);
+                // Podrías mostrar un alert o mensaje en la UI para el cliente
+            } else {
+                console.log(`Cliente: Mensaje WebSocket recibido no manejado para barbero ${selectedBarberId}:`, wsData);
+            }
+        };
+
+        socket.onclose = function(e) {
+            let message = `Cliente: Socket para barbero ${barberId} cerrado.`;
+            if (e.wasClean) {
+                console.log(`${message} La conexión se cerró limpiamente. Código: ${e.code}, Razón: ${e.reason}`);
+            } else {
+                console.error(`${message} Cerrado inesperadamente. Código: ${e.code}, Razón: ${e.reason}`, e);
+                // Intento de reconexión si no fue un cierre limpio
+                // OJO: Podrías querer limitar los reintentos para evitar bucles infinitos
+                if (assignedTicketDisplay.style.display === 'block') { // Solo reconectar si el cliente sigue en la pantalla de ticket
+                    console.warn(`Cliente: Reconectando WebSocket para barbero ${barberId} en 3 segundos...`);
+                    setTimeout(() => {
+                        currentBarberSocket = setupCustomerSocket(barberId); // Reasignar el nuevo socket
+                    }, 3000); 
+                }
+            }
+        };
+
+        socket.onerror = function(error) {
+            console.error(`Cliente: Error fatal en el socket para barbero ${barberId}:`, error);
+            // Podrías mostrar un mensaje al usuario para que intente de nuevo
+            alert("Hubo un error con la conexión en vivo. Recarga la página o inténtalo de nuevo.");
+        };
+
+        return socket; // Devuelve el objeto socket
+    }
+
+    // Manejador de clics para los botones de selección de barbero
     document.querySelectorAll('.select-barber-button').forEach(button => {
         button.addEventListener('click', function() {
             const barberCard = this.closest('.barber-card');
@@ -40,7 +91,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Validar el ID antes de continuar
             if (!/^[a-zA-Z0-9_.-]+$/.test(selectedBarberId)) {
                 alert("ID de barbero inválido. Selecciona otro barbero.");
-                // Volver a habilitar botones si hay un error
                 document.querySelectorAll('.select-barber-button').forEach(btn => btn.disabled = false);
                 return;
             }
@@ -48,7 +98,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Deshabilitar todos los botones para evitar múltiples clics
             document.querySelectorAll('.select-barber-button').forEach(btn => btn.disabled = true);
 
-            // *** Obtener el token CSRF ANTES de la petición fetch ***
             const csrfToken = getCookie('csrftoken');
 
             // Fetch para emitir un nuevo número de ticket
@@ -56,21 +105,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // *** AÑADE ESTE ENCABEZADO para enviar el token CSRF ***
                     'X-CSRFToken': csrfToken, 
                 },
                 body: JSON.stringify({ barber_id: selectedBarberId })
             })
             .then(response => {
-                // Ya no debería dar 403 por CSRF si el token se envía correctamente
                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    // Si el servidor devuelve un error HTTP (ej. 400, 404, 500)
+                    return response.json().then(err => { throw new Error(`Error ${response.status}: ${err.message || response.statusText}`); });
                 }
                 return response.json();
             })
             .then(data => {
                 if (data.success) {
-                    console.log('Ticket emitido:', data);
+                    console.log('Cliente: Ticket emitido:', data);
+                    
                     // Ocultar la pantalla de selección y mostrar la de ticket
                     selectionScreen.style.display = 'none';
                     assignedTicketDisplay.style.display = 'block';
@@ -78,48 +127,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Rellenar la información del ticket
                     yourTicketNumberSpan.textContent = data.assigned_number;
                     assignedBarberNameSpan.textContent = data.barber_name;
-                    currentBarberNameDisplaySpan.textContent = data.barber_name;
-                    currentTicketNumberDisplaySpan.textContent = data.current_number_for_barber;
+                    currentBarberNameDisplaySpan.textContent = data.barber_name; // Nombre del barbero para el current queue display
+                    currentTicketNumberDisplaySpan.textContent = data.current_number_for_barber; // Número actual que atiende el barbero
 
-                    // Abrir conexión WebSocket para este barbero específico para actualizaciones en vivo
+                    // Cerrar conexión anterior si existe y abrir una nueva
                     if (currentBarberSocket) {
-                        currentBarberSocket.close(); // Cerrar conexión anterior si existe
+                        currentBarberSocket.close(); 
                     }
-                    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                    console.log("✅ WebSocket abriéndose con barber_id =", selectedBarberId);
-                    currentBarberSocket = new WebSocket(
-                        protocol + '//' + window.location.host + `/ws/queue/${selectedBarberId}/`
-                    );
-
-                    currentBarberSocket.onmessage = function(e) {
-                        const wsData = JSON.parse(e.data);
-                        // Asegurarse de que la actualización es para el barbero correcto
-                        if (wsData.type === 'queue_update' && wsData.barber_id == selectedBarberId) {
-                            // Actualizar el número actual siendo atendido
-                            currentTicketNumberDisplaySpan.textContent = wsData.number;
-                            console.log(`Actualización en vivo: Barbero ${selectedBarberId} actual número: ${wsData.number}`);
-                            // No actualizamos 'yourTicketNumberSpan' aquí, ese es fijo una vez asignado.
-                        }
-                    };
-
-                    currentBarberSocket.onclose = function(e) {
-                        console.error(`WebSocket para barbero ${selectedBarberId} cerrado inesperadamente.`, e);
-                    };
-
-                    currentBarberSocket.onerror = function(e) {
-                        console.error(`Error en WebSocket para barbero ${selectedBarberId}:`, e);
-                    };
+                    // **CORRECCIÓN CLAVE AQUÍ: ASIGNAR EL NUEVO SOCKET A LA VARIABLE GLOBAL**
+                    currentBarberSocket = setupCustomerSocket(selectedBarberId);
 
                 } else {
-                    alert('Error al asignar turno: ' + data.message);
-                    // Volver a habilitar botones si hay un error
+                    alert('Cliente: Error al asignar turno: ' + data.message);
                     document.querySelectorAll('.select-barber-button').forEach(btn => btn.disabled = false);
                 }
             })
             .catch(error => {
-                console.error('Error de red o servidor al seleccionar barbero:', error);
-                alert('Hubo un problema al intentar seleccionar un barbero. Inténtalo de nuevo.');
-                // Volver a habilitar botones en caso de error de red
+                console.error('Cliente: Error de red o servidor al seleccionar barbero:', error);
+                alert('Hubo un problema al intentar seleccionar un barbero. Inténtalo de nuevo. Detalle: ' + error.message);
                 document.querySelectorAll('.select-barber-button').forEach(btn => btn.disabled = false);
             });
         });
@@ -133,7 +158,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         assignedTicketDisplay.style.display = 'none';
         selectionScreen.style.display = 'block';
-        // Volver a habilitar todos los botones de selección
         document.querySelectorAll('.select-barber-button').forEach(btn => btn.disabled = false);
     });
 });

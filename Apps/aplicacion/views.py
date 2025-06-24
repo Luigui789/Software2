@@ -276,7 +276,7 @@ def validar_cedula_nicaragua(cedula):
     return True, ""
 
 
-@login_required(login_url='login')
+@login_required(login_url='aplicacion:login')
 @rol_requerido(['Administrador'])
 @permission_required('aplicacion.add_barbero', raise_exception=True)
 def AdminBarbero(request):
