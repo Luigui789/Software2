@@ -728,7 +728,7 @@ def AdminCliente(request):
                 messages.error(request, error_msg) # Usa messages.error para mostrar los errores
             
             clientes = Cliente.objects.all().order_by('-id')[:10]
-            return render(request, 'aplicacion/Admin_Cliente.html', {
+            return render(request, 'aplicacion/admin_cliente.html', {
                 'clientes': clientes,
                 'datos': request.POST # Para pre-rellenar el formulario con los datos enviados
             })
@@ -1777,8 +1777,8 @@ def enviar_link_whatsapp(numero, url_drive_del_reporte, nombre_reporte): # Renom
         raise 
     
 
-# @login_required(login_url='login')  # Redirige a 'login' si no está autenticado
-# @rol_requerido(['Administrador'])
+@login_required(login_url='login')  # Redirige a 'login' si no está autenticado
+@rol_requerido(['Administrador'])
 def enviar_reporte_excel_whatsapp(request):
     if request.method == 'POST':
         numero = request.POST.get('numero') 

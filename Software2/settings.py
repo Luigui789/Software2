@@ -181,8 +181,13 @@ TWILIO_TEMPLATE_SID = os.environ.get('TWILIO_TEMPLATE_SID', default='')
 # TWILIO_WHATSAPP_NUMBER = config('TWILIO_WHATSAPP_NUMBER')
 # TWILIO_TEMPLATE_SID = config('TWILIO_TEMPLATE_SID', default='')
 
-ASGI_APPLICATION = 'Software2.asgi.application'
+# ASGI_APPLICATION = 'Software2.asgi.application'
 
+# CHANNEL_LAYERS = {
+#         "default": {
+#             "BACKEND": "channels.layers.InMemoryChannelLayer"
+#         }
+#     }
 
 # Configuración de Redis para producción
 
