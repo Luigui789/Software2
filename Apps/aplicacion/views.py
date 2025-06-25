@@ -747,7 +747,7 @@ def AdminCliente(request):
 
     # Para solicitudes GET, o si el POST no es válido inicialmente
     clientes = Cliente.objects.all().order_by('-id')[:10] # Solo los últimos 10 registros
-    return render(request, 'aplicacion/Admin_Cliente.html', {'clientes': clientes})
+    return render(request, 'aplicacion/admin_cliente.html', {'clientes': clientes})
 
 @login_required(login_url='login')  # Redirige a 'login' si no está autenticado
 @rol_requerido(['Administrador', 'Barbero'])
