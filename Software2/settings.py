@@ -146,7 +146,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 STATICFILES_DIRS = [
     # Puedes añadir más si tienes otras carpetas 'static' fuera de las apps
-    os.path.join(BASE_DIR, 'Software2/static'),
+    # os.path.join(BASE_DIR, 'Software2/Apps/aplicacion/static'),
 ]
 
 # Media files
