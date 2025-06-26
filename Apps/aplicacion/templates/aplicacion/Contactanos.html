@@ -1,6 +1,6 @@
 {% extends "aplicacion/Layout.html" %}
 {% load static %}
-{% block title %} Quienes Somos {% endblock %}
+{% block title %} Contactenos {% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/Style.css' %}">
@@ -8,36 +8,39 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet"> 
 {% endblock %}
 
-
 {% block content %}
 <div class="container">
-    <img class="logo" src="{% static 'image/logo.jpg' %}" alt="Logo" />
+    <img class="logo" src="{% static 'image/logo.png' %}" alt="Logo" />
     <h1>Horario de atención:</h1>
-    <h3>Lunes a Sábado: 9:00 A.M - 5:00 P.M </h3>
-    <h3>Lunes a Viernes After Office: 5:00 P.M - 8:00 P.M </h3>
-    <h3>Domingo: 9:00 A.M - 12:00 P.M </h3>
-    <br>
-    <h4>7 Esquinas 25 Vrs al Norte, Masaya</h4>
+    <div class="horarios">
+        <h3>Lunes a Sábado: 9:00 A.M - 5:00 P.M</h3>
+        <h3>Lunes a Viernes After Office: 5:00 P.M - 8:00 P.M</h3>
+        <h3>Domingo: 9:00 A.M - 12:00 P.M</h3>
+    </div>
+    <div class="ubicacion">
+        <h4>7 Esquinas 25 Vrs al Norte, Masaya</h4>
+    </div>
 
     <div class="redes">
         <div class="links">
-            <a href="https://www.instagram.com/mojicasbarbershop?igsh=N3hwemJmMmFucnVm"><img src="{% static 'image/instagram.png' %}" alt="ig" /></a>
+            <a href="https://www.instagram.com/mojicasbarbershop?igsh=N3hwemJmMmFucnVm">
+                <img src="{% static 'image/instagram.png' %}" alt="Instagram" />
+            </a>
             <p><a href="https://www.instagram.com/mojicasbarbershop?igsh=N3hwemJmMmFucnVm">Mojica's Barber Shop</a></p>
         </div>
 
         <div class="links">
-            <img src="{% static 'image/phone-call.png' %}" alt="ig" />
-            <p><a href="">+505 8788-2666</a></p>
+            <img src="{% static 'image/phone-call.png' %}" alt="Teléfono" />
+            <p><a href="tel:+50587882666">+505 8788-2666</a></p>
         </div>
 
         <div class="links">
-            <a href="https://www.facebook.com/share/1BZEv3rj1j/"><img src="{% static 'image/facebook.png' %}" alt="ig" /></a>
+            <a href="https://www.facebook.com/share/1BZEv3rj1j/">
+                <img src="{% static 'image/facebook.png' %}" alt="Facebook" />
+            </a>
             <p><a href="https://www.facebook.com/share/1BZEv3rj1j/">Facebook</a></p>
         </div>
-        
     </div>
 </div>
 {% endblock %}
-{% block JavaSripts %}
-<Script ></Script>
-{% endblock %}
+

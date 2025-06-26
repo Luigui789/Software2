@@ -166,10 +166,10 @@ AUTHENTICATION_BACKENDS = [
 ]
 AXES_FAILURE_LIMIT = 5  # número máximo de intentos antes del bloqueo
 AXES_COOLOFF_TIME = 1  # en horas (ej: 1 hora de bloqueo)
-AXES_LOCKOUT_TEMPLATE = 'login_bloqueado.html'  # plantilla personalizada para bloqueo
+AXES_LOCKOUT_TEMPLATE = 'aplicacion/login_bloqueado.html'  # plantilla personalizada para bloqueo
 AXES_FAILURE_LIMIT_BY_USERNAME = True # Para lograr el mismo comportamiento recomendado
 
-# Twilio Railway Configuración
+# Twilio Render Configuración
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
 TWILIO_WHATSAPP_NUMBER = os.environ.get('TWILIO_WHATSAPP_NUMBER')
@@ -181,7 +181,7 @@ TWILIO_TEMPLATE_SID = os.environ.get('TWILIO_TEMPLATE_SID', default='')
 # TWILIO_WHATSAPP_NUMBER = config('TWILIO_WHATSAPP_NUMBER')
 # TWILIO_TEMPLATE_SID = config('TWILIO_TEMPLATE_SID', default='')
 
-# ASGI_APPLICATION = 'Software2.asgi.application'
+ASGI_APPLICATION = 'Software2.asgi.application'
 
 # CHANNEL_LAYERS = {
 #         "default": {
@@ -189,8 +189,8 @@ TWILIO_TEMPLATE_SID = os.environ.get('TWILIO_TEMPLATE_SID', default='')
 #         }
 #     }
 
-# Configuración de Redis para producción
 
+# Configuración de Redis para producción
 if not DEBUG:
     CHANNEL_LAYERS = {
         "default": {

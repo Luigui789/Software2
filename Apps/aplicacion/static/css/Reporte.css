@@ -1,192 +1,630 @@
-/* Centrar tabla en la página */
+/* ======== ESTILOS GENERALES ======== */
+* {
+    box-sizing: border-box;
+}
+
+.reporte-container {
+    padding: 1rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: 80vh;
+}
+
+/* ======== TÍTULO ======== */
 h1 {
     text-align: center;
-    color: #40270E;
-    font-family: 'Space grotesk', sans-serif;
-    margin-bottom: 20px;
-}
-table {
-    width: 90%; /* o el ancho que prefieras */
-    margin: 0 auto; /* centro horizontal */
-    border-collapse: separate;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #40270E;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-    text-align: center; /* texto centrado dentro de la tabla */
+    color: #40270e;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 2.5rem;
+    margin: 2rem 0;
+    font-weight: bold;
 }
 
-/* Encabezados centrados */
-th {
-    background-color: #B3B1A9;
-    color: #40270E;
-    font-weight: 700;
-    padding: 14px 20px;
-    user-select: none;
-    text-align: center; /* centrado */
+/* ======== SECCIÓN DE FILTROS ======== */
+.filtro-section {
+    margin-bottom: 2rem;
 }
 
-/* Celdas centradas */
-td {
-    background-color: #835527;
-    color: #fff;
-    padding: 14px 20px;
-    vertical-align: middle;
-    text-align: center; /* centrado */
-}
-
-
-/* Otros estilos mantienen igual */
-
-tbody tr:nth-child(even) td {
-    background-color: #7a4d1d;
-}
-
-tbody tr:hover td {
-    background-color: #9e754a;
-    color: #fff;
-    transition: background-color 0.3s ease;
-}
-
-/* Scroll horizontal responsivo */
-.table-section {
-    overflow-x: auto;
-}
-
-/* Responsive */
-@media screen and (max-width: 750px) {
-    table {
-        font-size: 0.85rem;
-    }
-    th, td {
-        padding: 10px 12px;
-    }
-}
-
-/* Contenedor del filtro */
 .filtro-form {
-    margin-bottom: 20px;
+    background-color: rgba(179, 177, 169, 0.1);
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 2px solid #b3b1a9;
+}
+
+.filtro-row {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 1rem;
+    margin-bottom: 1rem;
     flex-wrap: wrap;
-    background-color: #f9f9f9;
-    padding: 15px 20px;
+}
+
+.filtro-row:last-child {
+    margin-bottom: 0;
+}
+
+.rango-inputs {
+    background-color: rgba(131, 85, 39, 0.1);
+    padding: 1rem;
     border-radius: 10px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #835527;
+}
+
+.date-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 /* Etiquetas del filtro */
 .filtro-form label {
     font-weight: 600;
-    font-size: 1.1em;
-    color: #333;
+    font-size: 1.1rem;
+    color: #40270e;
+    white-space: nowrap;
 }
 
 /* Select y inputs */
 .filtro-form select,
 .filtro-form input[type="date"] {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1em;
+    padding: 0.8rem 1rem;
+    border: 2px solid #b3b1a9;
+    border-radius: 8px;
+    font-size: 1rem;
     cursor: pointer;
-    transition: border-color 0.3s ease;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    color: #40270e;
 }
 
 .filtro-form select:hover,
 .filtro-form input[type="date"]:hover,
 .filtro-form select:focus,
 .filtro-form input[type="date"]:focus {
-    border-color: #007bff;
+    border-color: #835527;
     outline: none;
-    box-shadow: 0 0 6px #007bff;
+    box-shadow: 0 0 8px rgba(131, 85, 39, 0.3);
 }
 
 /* Botón filtrar */
-.filtro-form button {
-    padding: 8px 20px;
-    background-color: #007bff;
+.btn-filtrar {
+    padding: 0.8rem 1.5rem;
+    background-color: #835527;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     color: white;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    font-size: 1rem;
 }
 
-.filtro-form button:hover {
-    background-color: #0056b3;
+.btn-filtrar:hover {
+    background-color: #6b3e17;
+    transform: translateY(-2px);
 }
 
-.messages {
-    list-style-type: none;
-    padding: 0;
-    margin: 10px auto;
-    width: 80%;
-    text-align: center;
+/* ======== MENSAJES ======== */
+.messages-container {
+    margin-top: 1rem;
 }
-.messages li {
+
+.message {
     color: white;
     background-color: #e74c3c;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 10px;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    font-weight: 500;
 }
 
+/* ======== BOTONES DE REPORTE ======== */
 .report-buttons-container {
-    display: flex; /* Para poner los botones en línea */
-    justify-content: center; /* Centrar los botones horizontalmente */
-    gap: 15px; /* Espacio entre los botones */
-    margin-top: 25px; /* Espacio superior para separar de otros elementos */
-    margin-bottom: 25px; /* Espacio inferior */
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    gap: 0.8rem;
+    margin: 2rem 0;
+    flex-wrap: nowrap;
+    flex-direction: row !important;
+}
+
+.btn-link {
+    text-decoration: none;
+    flex: 1;
+    max-width: 150px;
+}
+
+.whatsapp-form {
+    margin: 0;
+    flex: 1;
+    max-width: 150px;
 }
 
 .report-buttons-container button {
-    padding: 12px 25px; /* Relleno interno */
-    border: none; /* Sin borde */
-    border-radius: 8px; /* Bordes redondeados */
-    cursor: pointer; /* Cambiar cursor al pasar por encima */
-    font-size: 16px; /* Tamaño de fuente */
-    font-weight: bold; /* Negrita */
-    color: white; /* Color del texto */
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Transiciones suaves */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para dar profundidad */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.8rem 0.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    min-height: 50px;
 }
 
-/* Estilos específicos para el botón Descargar PDF */
+/* ======== TABLA ======== */
+.table-section {
+    margin: 2rem 0;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.servicios-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: "Space Grotesk", sans-serif;
+    color: #40270e;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Encabezados */
+.servicios-table th {
+    background-color: #b3b1a9;
+    color: #40270e;
+    font-weight: 700;
+    padding: 1rem 0.8rem;
+    text-align: center;
+    user-select: none;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #835527;
+}
+
+/* Celdas */
+.servicios-table td {
+    background-color: #835527;
+    color: #fff;
+    padding: 1rem 0.8rem;
+    vertical-align: middle;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9rem;
+}
+
+.servicios-table tbody tr:nth-child(even) td {
+    background-color: #7a4d1d;
+}
+
+.servicios-table tbody tr:hover td {
+    background-color: #9e754a;
+    transition: background-color 0.3s ease;
+}
+
+/* Servicios list */
+.servicios-list {
+    max-width: 180px;
+    margin: 0 auto;
+}
+
+.servicio-item {
+    display: inline-block;
+    background-color: #835527;
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    margin: 0.1rem;
+    font-size: 0.8rem;
+}
+
+/* Precio destacado */
+.precio {
+    font-weight: bold;
+    font-size: 1rem;
+    color: #835527;
+}
+
+/* Fila vacía */
+.empty-row td {
+    background-color: #f8f9fa !important;
+    color: #6c757d !important;
+    padding: 3rem 1rem !important;
+}
+
+.empty-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.empty-message i {
+    font-size: 1.5rem;
+}
+
+/* ======== RESPONSIVE DESIGN ======== */
+
+/* Tablets grandes */
+@media screen and (max-width: 1024px) {
+    .reporte-container {
+        padding: 0.8rem;
+    }
+
+    h1 {
+        font-size: 2.2rem;
+    }
+
+    .report-buttons-container {
+        gap: 1rem;
+    }
+
+    .report-buttons-container button {
+        min-width: 160px;
+        padding: 0.9rem 1.2rem;
+    }
+}
+
+/* Tablets medianas */
+@media screen and (max-width: 768px) {
+    .reporte-container {
+        padding: 0.5rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+        margin: 1.5rem 0;
+    }
+
+    /* Filtros responsive */
+    .filtro-form {
+        padding: 1rem;
+    }
+
+    .filtro-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.8rem;
+    }
+
+    .rango-inputs {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .date-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    /* Botones responsive */
+    .report-buttons-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .report-buttons-container button {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    /* Tabla móvil */
+    .servicios-table {
+        font-size: 0.9rem;
+    }
+
+    .servicios-table th,
+    .servicios-table td {
+        padding: 0.8rem 0.5rem;
+    }
+
+    .servicios-list {
+        max-width: 150px;
+    }
+}
+
+/* Móviles grandes */
+@media screen and (max-width: 600px) {
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    .filtro-form {
+        padding: 0.8rem;
+    }
+
+    .filtro-form label {
+        font-size: 1rem;
+    }
+
+    .filtro-form select,
+    .filtro-form input[type="date"] {
+        padding: 0.7rem;
+        font-size: 0.9rem;
+    }
+
+    /* Mantener botones horizontales SIEMPRE */
+    .report-buttons-container {
+        flex-direction: row !important;
+        gap: 0.5rem;
+        margin: 1.5rem 0;
+    }
+
+    .report-buttons-container button {
+        padding: 0.7rem 0.4rem;
+        font-size: 0.75rem;
+        min-height: 45px;
+    }
+
+    /* Tabla card style con colores originales */
+    .servicios-table thead {
+        display: none;
+    }
+
+    .servicios-table,
+    .servicios-table tbody,
+    .servicios-table tr,
+    .servicios-table td {
+        display: block;
+    }
+
+    .servicios-table tbody tr {
+        background: linear-gradient(135deg, #835527 0%, #7a4d1d 100%);
+        margin-bottom: 1.5rem;
+        border-radius: 12px;
+        padding: 0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border: 2px solid #6b3e17;
+        overflow: hidden;
+    }
+
+    .servicios-table tbody tr:nth-child(even) {
+        background: linear-gradient(135deg, #7a4d1d 0%, #6b3e17 100%);
+    }
+
+    .servicios-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: transparent !important;
+        border: none;
+        padding: 1rem 1.5rem;
+        text-align: left;
+        color: #fff;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 0.95rem;
+        min-height: 50px;
+    }
+
+    .servicios-table td:last-child {
+        border-bottom: none;
+    }
+
+    .servicios-table td:before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: #ffe8dc;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        flex-shrink: 0;
+        width: auto;
+        margin-right: 1rem;
+    }
+
+    .servicios-table td:after {
+        content: "";
+        flex-grow: 1;
+        border-bottom: 1px dotted rgba(255, 255, 255, 0.3);
+        margin: 0 0.5rem;
+    }
+
+    /* Estilos específicos por tipo de celda */
+    .servicios-table td[data-label="ID"] {
+        background-color: rgba(255, 255, 255, 0.1);
+        font-weight: bold;
+        font-size: 1rem;
+    }
+
+    .servicios-table td[data-label="Fecha"] {
+        font-weight: 500;
+    }
+
+    .servicios-table td[data-label="Cliente"],
+    .servicios-table td[data-label="Barbero"] {
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+
+    .servicios-table td[data-label="Servicios"] {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.2rem 1.5rem;
+    }
+
+    .servicios-table td[data-label="Servicios"]:after {
+        display: none;
+    }
+
+    .servicios-list {
+        max-width: none;
+        margin-top: 0.5rem;
+        width: 100%;
+    }
+
+    .servicio-item {
+        display: inline-block;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        margin: 0.2rem 0.2rem 0.2rem 0;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .servicios-table td[data-label="Total"] {
+        background-color: rgba(255, 255, 255, 0.15);
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: #fff;
+        border-radius: 0 0 10px 10px;
+    }
+
+    .precio {
+        color: #fff !important;
+        font-weight: bold;
+        font-size: 1.2rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Fila vacía mejorada */
+    .empty-row {
+        display: block !important;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        border: 2px dashed #6c757d !important;
+    }
+
+    .empty-row td {
+        padding: 2rem 1.5rem !important;
+        text-align: center !important;
+        color: #6c757d !important;
+        background-color: transparent !important;
+        border: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .empty-row td:before {
+        display: none !important;
+    }
+
+    .empty-row td:after {
+        display: none !important;
+    }
+}
+
+/* Móviles pequeños */
+@media screen and (max-width: 480px) {
+    .reporte-container {
+        padding: 0.3rem;
+    }
+
+    h1 {
+        font-size: 1.6rem;
+        margin: 1rem 0;
+    }
+
+    .filtro-form {
+        padding: 0.6rem;
+    }
+
+    .report-buttons-container button {
+        padding: 0.8rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .servicios-table tbody tr {
+        padding: 0.8rem;
+    }
+
+    .servicios-table td {
+        padding: 0.4rem 0;
+        font-size: 0.9rem;
+    }
+}
+
+/* Móviles muy pequeños */
+@media screen and (max-width: 400px) {
+    h1 {
+        font-size: 1.4rem;
+    }
+
+    .report-buttons-container {
+        flex-direction: row !important;
+        gap: 0.3rem;
+    }
+
+    .report-buttons-container button {
+        padding: 0.8rem 0.3rem;
+        font-size: 0.7rem;
+        min-width: auto;
+        flex: 1;
+    }
+
+    .report-buttons-container button span {
+        font-size: 0.65rem;
+        line-height: 1.1;
+    }
+
+    .report-buttons-container button i {
+        font-size: 1.2rem;
+    }
+
+    .servicios-table td {
+        font-size: 0.85rem;
+    }
+}
+
+/* ======== MEJORAS DE ACCESIBILIDAD ======== */
+@media (prefers-reduced-motion: reduce) {
+
+    .report-buttons-container button,
+    .btn-filtrar,
+    .servicios-table tbody tr {
+        transition: none;
+    }
+}
+
+
+/* Botón PDF */
 .btn-pdf {
-    background-color: #dc3545; /* Rojo de Bootstrap para peligro/error */
+    background-color: #dc3545;
 }
 
 .btn-pdf:hover {
-    background-color: #c82333; /* Rojo más oscuro al pasar el ratón */
-    transform: translateY(-2px); /* Pequeño levantamiento */
+    background-color: #c82333;
+    transform: translateY(-2px);
 }
 
-/* Estilos específicos para el botón Descargar Excel */
+/* Botón Excel */
 .btn-excel {
-    background-color: #28a745; /* Verde de Bootstrap para éxito */
+    background-color: #28a745;
 }
 
 .btn-excel:hover {
-    background-color: #218838; /* Verde más oscuro al pasar el ratón */
+    background-color: #218838;
     transform: translateY(-2px);
 }
 
-/* Estilos específicos para el botón Enviar WhatsApp */
+/* Botón WhatsApp */
 .btn-whatsapp {
-    background-color: #25d366; /* Verde de WhatsApp */
-    display: flex; /* Para alinear el icono y el texto */
-    align-items: center; /* Centrar verticalmente */
-    gap: 8px; /* Espacio entre icono y texto */
+    background-color: #25d366;
 }
 
 .btn-whatsapp:hover {
-    background-color: #1da851; /* Verde WhatsApp más oscuro */
+    background-color: #1da851;
     transform: translateY(-2px);
-}
-
-/* Estilos para el icono (si usas Boxicons o similar) */
-.btn-whatsapp i {
-    font-size: 20px; /* Tamaño del icono */
 }

@@ -1,15 +1,21 @@
+/* ======== ESTILOS GENERALES ======== */
+* {
+    box-sizing: border-box;
+}
+
+/* ======== PRIMERA SECCIÓN ======== */
 .container {
-    padding-top: 2rem;
+    padding: 2rem 1rem;
     min-height: 21vh;
     width: 100vw;
     display: flex;
     justify-content: center;
     align-items: flex-start;
+    box-sizing: border-box;
 }
 
 .box {
     background-color: rgba(176, 156, 124, 0.9);
-    /* 80% opacidad */
     padding: 2.5rem 2rem;
     border-radius: 18px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
@@ -18,16 +24,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-}
-
-equipo-header {
-    background: #8a5a24;
-    /* border-radius: 18px 18px 0 0; */
-    color: #fff;
-    text-align: center;
-    padding: 1.2rem 0 0.5rem 0;
-    margin-bottom: 1.5rem;
-    margin-top: 2rem;
+    box-sizing: border-box;
 }
 
 .contenido {
@@ -35,7 +32,8 @@ equipo-header {
     align-items: center;
     justify-content: space-between;
     gap: 4rem;
-    width: 89%;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .imagendegrupo {
@@ -45,6 +43,7 @@ equipo-header {
     border-radius: 18px;
     object-fit: cover;
     background: #222;
+    flex-shrink: 0;
 }
 
 .texto-box {
@@ -55,6 +54,7 @@ equipo-header {
     gap: 0.5rem;
     width: 100%;
     max-width: 480px;
+    flex-grow: 1;
 }
 
 .texto-box h2 {
@@ -63,13 +63,14 @@ equipo-header {
     margin: 0 0 0.5rem 0;
     font-weight: bold;
     letter-spacing: 6px;
+    word-break: break-word;
 }
 
 .texto-box p {
     font-size: 1rem;
     color: #4d3a1a;
     margin: 0 0 1rem 0;
-    max-width: 400px;
+    line-height: 1.5;
 }
 
 .texto-box button {
@@ -82,8 +83,8 @@ equipo-header {
     border-radius: 18px;
     cursor: pointer;
     margin-bottom: 1.5rem;
-    box-shadow: 0;
     transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
 }
 
 .texto-box button:hover {
@@ -112,70 +113,21 @@ ul li a {
     font-weight: bold;
     font-size: 1.2rem;
     display: block;
+    transition: color 0.2s;
 }
 
-/* Responsive para .contenido */
-
-@media (max-width: 900px) {
-    .contenido {
-        flex-direction: column;
-        align-items: center;
-        gap: 2rem;
-        width: 100%;
-    }
-
-    .container {
-        padding: 1.5rem 0.5rem;
-        width: 90vw;
-        max-width: 90vw;
-        margin: 0 auto;
-    }
-
-    .imagendegrupo {
-        width: 80vw;
-        max-width: 320px;
-        min-width: 160px;
-    }
-
-    .texto-box {
-        max-width: 90vw;
-        align-items: center;
-        text-align: center;
-    }
+ul li a:hover {
+    color: #4d2c0c;
 }
 
-@media (max-width:400px) {
-    .imagendegrupo {
-        width: 95vw;
-        max-width: 95vw;
-        min-width: 50px;
-    }
-
-    .texto-box h2 {
-        font-size: 1.1rem;
-        letter-spacing: 2px;
-
-    }
-
-    .texto-box p {
-        font-size: 0.95rem;
-        max-width: 95vw;
-    }
-
-    .texto-box button {
-        font-size: 1rem;
-        padding: 0.7rem 1.5rem;
-    }
-}
-
-
-/* segunda parte  */
-
+/* ======== SEGUNDA SECCIÓN ======== */
 .experiencia-container {
     width: 100vw;
     display: flex;
     justify-content: center;
     margin: 2.5rem 0;
+    padding: 0 1rem;
+    box-sizing: border-box;
 }
 
 .experiencia-box {
@@ -184,35 +136,37 @@ ul li a {
     padding: 2.5rem 2rem 2rem 2rem;
     max-width: 1100px;
     width: 95vw;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
     align-items: center;
+    box-sizing: border-box;
 }
 
 .experiencia-titulo {
-    font-family: 'Georgia', serif;
+    font-family: "Georgia", serif;
     font-size: 3rem;
     color: #3d2a13;
     margin: 0 0 0.5rem 0;
     text-align: center;
+    word-break: break-word;
 }
 
 .experiencia-desc {
-    color: #40270E;
+    color: #40270e;
     font-size: 1rem;
     text-align: center;
     max-width: 552px;
-    margin-bottom: 0.5rem;
-    min-height: 60px;
-    height: 100px;
+    margin-bottom: 2rem;
+    line-height: 1.6;
 }
 
 .experiencia-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem 3rem;
-    width: 80%;
+    gap: 2rem 3rem;
+    width: 100%;
+    max-width: 900px;
     margin-bottom: 2rem;
 }
 
@@ -221,6 +175,8 @@ ul li a {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    padding: 1rem;
+    box-sizing: border-box;
 }
 
 .experiencia-icon {
@@ -229,76 +185,42 @@ ul li a {
 }
 
 .experiencia-item h3 {
-    font-family: 'Georgia', serif;
+    font-family: "Georgia", serif;
     font-size: 1.4rem;
     color: #3d2a13;
-    margin: 0.5rem 0 0.5rem 0;
+    margin: 0.5rem 0;
+    word-break: break-word;
 }
 
 .experiencia-item p {
     font-size: 1rem;
     color: #3d2a13;
     margin: 0;
+    line-height: 1.5;
 }
 
 .experiencia-visitanos {
-    font-family: 'Georgia', serif;
+    font-family: "Georgia", serif;
     font-size: 1.4rem;
     color: #3d2a13;
     text-align: center;
     margin-top: 1.5rem;
+    word-break: break-word;
 }
 
-/* Responsive segunda parte */
-@media (max-width: 900px) {
-    .experiencia-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 1.5rem 1rem;
-    }
-
-    .experiencia-box {
-        padding: 1.5rem 0.5rem;
-    }
-
-    .experiencia-titulo {
-        font-size: 2.2rem;
-    }
-
-    .experiencia-container {
-        padding: 1.5rem 0.5rem;
-        width: 90vw;
-        max-width: 90vw;
-        margin: 0 auto;
-    }
-}
-
-@media (max-width: 600px) {
-    .experiencia-grid {
-        grid-template-columns: 1fr;
-        gap: 1.2rem 0;
-    }
-
-    .experiencia-titulo {
-        font-size: 1.5rem;
-    }
-
-    .experiencia-visitanos {
-        font-size: 1rem;
-    }
-}
-
-/* terceparte */
+/* ======== TERCERA SECCIÓN ======== */
 .equipo-section {
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(179, 177, 169, 0.8);
-    /* 80% opacidad */
     border-radius: 31px;
     padding: 2.5rem 2rem;
     max-width: 1096px;
     margin: 2.5rem auto;
     gap: 2.5rem;
+    width: 95vw;
+    box-sizing: border-box;
 }
 
 .equipo-info {
@@ -311,16 +233,18 @@ ul li a {
 }
 
 .equipo-info h2 {
-    font-family: 'Georgia', serif;
-    color: #613C18;
+    font-family: "Georgia", serif;
+    color: #613c18;
     font-size: 2rem;
     margin: 0;
+    word-break: break-word;
 }
 
 .equipo-info p {
     color: #4d2c0c;
     font-size: 1.1rem;
     margin: 0;
+    line-height: 1.6;
 }
 
 .equipo-btn {
@@ -335,6 +259,7 @@ ul li a {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
 }
 
 .equipo-btn:hover {
@@ -345,6 +270,7 @@ ul li a {
 .equipo-fotos {
     display: flex;
     gap: 1.5rem;
+    flex-shrink: 0;
 }
 
 .equipo-img {
@@ -355,29 +281,355 @@ ul li a {
     background: #222;
 }
 
-/* Responsive tercera parte  */
-@media (max-width: 900px) {
-    .equipo-section {
-        flex-direction: column;
-        align-items: center;
-        padding: 1.5rem 0.5rem;
-        gap: 2rem;
+/* ======== RESPONSIVE DESIGN OPTIMIZADO PARA MÓVILES ======== */
+
+/* Pantallas grandes (Desktops) */
+@media (max-width: 1200px) {
+    .contenido {
+        gap: 3rem;
     }
 
-    .equipo-fotos {
-        flex-direction: column;
-        gap: 1rem;
-        
+    .experiencia-grid {
+        gap: 1.5rem 2.5rem;
     }
 
     .equipo-img {
-        width: 90vw;
-        max-width: 320px;
+        width: 220px;
+        height: 220px;
+    }
+}
+
+/* Tablets grandes */
+@media (max-width: 1024px) {
+    .container {
+        padding: 1.5rem 1rem;
+    }
+
+    .box {
+        padding: 2rem 1.5rem;
+    }
+
+    .contenido {
+        gap: 2.5rem;
+    }
+
+    .imagendegrupo {
+        width: 40vw;
+        max-width: 350px;
+    }
+
+    .texto-box h2 {
+        font-size: 1.3rem;
+        letter-spacing: 4px;
+    }
+
+    .experiencia-titulo {
+        font-size: 2.5rem;
+    }
+
+    .experiencia-grid {
+        gap: 1.5rem 2rem;
+    }
+
+    .equipo-info h2 {
+        font-size: 1.8rem;
+    }
+
+    .equipo-img {
+        width: 200px;
         height: 200px;
+    }
+}
+
+/* Tablets medianas */
+@media (max-width: 900px) {
+    .contenido {
+        flex-direction: column;
+        align-items: center;
+        gap: 2.5rem;
+    }
+
+    .container {
+        padding: 1.5rem 1rem;
+    }
+
+    .box {
+        padding: 2.5rem 2rem;
+    }
+
+    .imagendegrupo {
+        width: 70vw;
+        max-width: 450px;
+        min-width: 320px;
+    }
+
+    .texto-box {
+        max-width: 90vw;
+        align-items: center;
+        text-align: center;
+    }
+
+    .experiencia-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 2.5rem 2rem;
+        width: 90%;
+    }
+
+    .experiencia-box {
+        padding: 2.5rem 2rem;
+    }
+
+    .experiencia-titulo {
+        font-size: 2.2rem;
+    }
+
+    .equipo-section {
+        flex-direction: column;
+        align-items: center;
+        padding: 2.5rem 2rem;
+        gap: 2.5rem;
     }
 
     .equipo-info {
         align-items: center;
         text-align: center;
+    }
+
+    .equipo-fotos {
+        justify-content: center;
+    }
+
+    .equipo-img {
+        width: 200px;
+        height: 200px;
+    }
+}
+
+/* MÓVILES - DISEÑO COMPACTO COMO EN LA IMAGEN */
+@media (max-width: 800px) {
+    .container {
+        padding: 1rem 0.5rem;
+    }
+
+    .box {
+        width: 95vw;
+        max-width: 95vw;
+        padding: 1.5rem;
+        margin: 0 auto;
+        background-color: rgba(60, 45, 35, 0.85);
+        /* Fondo más oscuro como en la imagen */
+        border-radius: 20px;
+    }
+
+    .contenido {
+        flex-direction: column;
+        gap: 0;
+        align-items: center;
+    }
+
+    /* Solo mostrar la imagen en móviles, ocultar el texto */
+    .imagendegrupo {
+        width: 100%;
+        max-width: 100%;
+        min-width: auto;
+        height: auto;
+        aspect-ratio: 4 / 5;
+        border-radius: 15px;
+        object-fit: cover;
+    }
+
+    .texto-box {
+        display: none;
+        /* Ocultar el texto en móviles para que se vea como en la imagen */
+    }
+
+    /* Segunda sección más compacta */
+    .experiencia-container {
+        padding: 0 0.5rem;
+        margin: 1.5rem 0;
+    }
+
+    .experiencia-box {
+        width: 95vw;
+        max-width: 95vw;
+        padding: 2rem 1.5rem;
+        margin: 0 auto;
+    }
+
+    .experiencia-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem 0;
+        width: 100%;
+    }
+
+    /* Tercera sección más compacta */
+    .equipo-section {
+        width: 95vw;
+        max-width: 95vw;
+        padding: 2rem 1.5rem;
+        margin: 1.5rem auto;
+    }
+
+    .equipo-fotos {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .equipo-img {
+        width: 100%;
+        max-width: 300px;
+        height: 200px;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 600px) {
+    .container {
+        padding: 0.8rem 0.3rem;
+    }
+
+    .box {
+        width: 97vw;
+        padding: 1.2rem;
+        border-radius: 18px;
+    }
+
+    .imagendegrupo {
+        border-radius: 12px;
+    }
+
+    .experiencia-container {
+        padding: 0 0.3rem;
+        margin: 1.2rem 0;
+    }
+
+    .experiencia-box {
+        width: 97vw;
+        padding: 1.8rem 1.2rem;
+        border-radius: 18px;
+    }
+
+    .experiencia-titulo {
+        font-size: 1.8rem;
+    }
+
+    .experiencia-desc {
+        font-size: 1rem;
+    }
+
+    .experiencia-item {
+        padding: 1rem;
+    }
+
+    .experiencia-icon {
+        font-size: 2.5rem;
+    }
+
+    .experiencia-item h3 {
+        font-size: 1.3rem;
+    }
+
+    .experiencia-item p {
+        font-size: 0.95rem;
+    }
+
+    .equipo-section {
+        width: 97vw;
+        padding: 1.8rem 1.2rem;
+        margin: 1.2rem auto;
+        border-radius: 20px;
+    }
+
+    .equipo-info h2 {
+        font-size: 1.6rem;
+    }
+
+    .equipo-info p {
+        font-size: 1rem;
+    }
+
+    .equipo-btn {
+        font-size: 1rem;
+        padding: 0.8rem 2rem;
+    }
+}
+
+/* Móviles muy pequeños */
+@media (max-width: 400px) {
+    .container {
+        padding: 0.5rem 0.2rem;
+    }
+
+    .box {
+        width: 98vw;
+        padding: 1rem;
+        border-radius: 15px;
+    }
+
+    .experiencia-container {
+        padding: 0 0.2rem;
+        margin: 1rem 0;
+    }
+
+    .experiencia-box {
+        width: 98vw;
+        padding: 1.5rem 1rem;
+        border-radius: 15px;
+    }
+
+    .experiencia-titulo {
+        font-size: 1.6rem;
+    }
+
+    .experiencia-desc {
+        font-size: 0.95rem;
+    }
+
+    .experiencia-item {
+        padding: 0.8rem;
+    }
+
+    .experiencia-icon {
+        font-size: 2.2rem;
+    }
+
+    .experiencia-item h3 {
+        font-size: 1.2rem;
+    }
+
+    .experiencia-item p {
+        font-size: 0.9rem;
+    }
+
+    .equipo-section {
+        width: 98vw;
+        padding: 1.5rem 1rem;
+        margin: 1rem auto;
+        border-radius: 18px;
+    }
+
+    .equipo-info h2 {
+        font-size: 1.4rem;
+    }
+
+    .equipo-info p {
+        font-size: 0.95rem;
+    }
+
+    .equipo-btn {
+        font-size: 0.95rem;
+        padding: 0.7rem 1.8rem;
+    }
+
+    .equipo-img {
+        max-width: 280px;
+        height: 180px;
+    }
+}
+
+/* Para pantallas más grandes, mostrar el texto nuevamente */
+@media (min-width: 801px) {
+    .texto-box {
+        display: flex !important;
     }
 }

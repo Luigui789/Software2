@@ -1,0 +1,516 @@
+/* ======== VARIABLES CSS ======== */
+:root {
+    --primary-color: #835527;
+    --secondary-color: #9e754a;
+    --error-color: #e74c3c;
+    --error-dark: #c0392b;
+    --info-color: #3498db;
+    --background-light: #f8f9fa;
+    --text-dark: #333;
+    --text-light: #fff;
+    --card-background: #ffffff;
+    --border-radius: 20px;
+    --shadow-light: 0 10px 30px rgba(0, 0, 0, 0.15);
+    --shadow-medium: 0 15px 40px rgba(0, 0, 0, 0.2);
+    --transition: all 0.3s ease;
+    --gradient-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-error: linear-gradient(135deg, var(--error-color) 0%, var(--error-dark) 100%);
+}
+
+/* ======== ESTILOS BASE ======== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--gradient-background);
+    font-family: "Space Grotesk", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 1rem;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Patrón de fondo sutil */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    z-index: -1;
+}
+
+/* ======== TARJETA PRINCIPAL ======== */
+.card {
+    background: var(--card-background);
+    padding: 3rem 2.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-medium);
+    text-align: center;
+    max-width: 450px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: cardEntrance 0.8s ease-out;
+    transition: var(--transition);
+}
+
+@keyframes cardEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient-error);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-light);
+}
+
+/* ======== TÍTULO ======== */
+.card h1 {
+    color: var(--error-color);
+    margin-bottom: 1.5rem;
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: var(--gradient-error);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    animation: titlePulse 2s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+.card h1::after {
+    content: "🔒";
+    position: absolute;
+    top: -5px;
+    right: -35px;
+    font-size: 1.5rem;
+    filter: none;
+    -webkit-text-fill-color: initial;
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+/* ======== PÁRRAFOS ======== */
+.card p {
+    color: var(--text-dark);
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+    opacity: 0.9;
+    animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 0.9;
+        transform: translateY(0);
+    }
+}
+
+/* ======== TIMER ======== */
+.card .timer {
+    font-weight: 700;
+    color: var(--error-color);
+    font-size: 1.4rem;
+    background: var(--gradient-error);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 8px;
+    background-color: rgba(231, 76, 60, 0.1);
+    border: 1px solid rgba(231, 76, 60, 0.2);
+    animation: timerPulse 1s ease-in-out infinite;
+    position: relative;
+}
+
+@keyframes timerPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+    }
+}
+
+/* ======== ENLACE ======== */
+.card a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    padding: 1rem 2rem;
+    text-decoration: none;
+    color: var(--text-light);
+    background: linear-gradient(135deg, var(--info-color) 0%, #2980b9 100%);
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: var(--transition);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.6s ease-out 0.4s both;
+}
+
+.card a::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.card a:hover::before {
+    left: 100%;
+}
+
+.card a:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #1f5f8b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+.card a:active {
+    transform: translateY(0);
+}
+
+.card a::after {
+    content: "←";
+    margin-left: 0.5rem;
+    transition: var(--transition);
+}
+
+.card a:hover::after {
+    transform: translateX(-3px);
+}
+
+/* ======== RESPONSIVE DESIGN ======== */
+
+/* Tablets (768px y menos) */
+@media screen and (max-width: 768px) {
+    body {
+        padding: 0.8rem;
+    }
+
+    .card {
+        padding: 2.5rem 2rem;
+        max-width: 400px;
+    }
+
+    .card h1 {
+        font-size: 2rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .card h1::after {
+        right: -30px;
+        font-size: 1.3rem;
+    }
+
+    .card p {
+        font-size: 1rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .card .timer {
+        font-size: 1.3rem;
+        padding: 0.25rem 0.6rem;
+    }
+
+    .card a {
+        padding: 0.9rem 1.8rem;
+        font-size: 0.95rem;
+        margin-top: 1.8rem;
+    }
+}
+
+/* Móviles grandes (600px y menos) */
+@media screen and (max-width: 600px) {
+    body {
+        padding: 0.5rem;
+    }
+
+    .card {
+        padding: 2rem 1.5rem;
+        max-width: 350px;
+        border-radius: 15px;
+    }
+
+    .card h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .card h1::after {
+        right: -25px;
+        font-size: 1.2rem;
+    }
+
+    .card p {
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+
+    .card .timer {
+        font-size: 1.2rem;
+        padding: 0.2rem 0.5rem;
+    }
+
+    .card a {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.9rem;
+        margin-top: 1.5rem;
+    }
+}
+
+/* Móviles medianos (480px y menos) */
+@media screen and (max-width: 480px) {
+    body {
+        padding: 0.3rem;
+    }
+
+    .card {
+        padding: 1.8rem 1.2rem;
+        max-width: 320px;
+    }
+
+    .card h1 {
+        font-size: 1.6rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .card h1::after {
+        right: -20px;
+        font-size: 1rem;
+    }
+
+    .card p {
+        font-size: 0.9rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .card .timer {
+        font-size: 1.1rem;
+        padding: 0.15rem 0.4rem;
+    }
+
+    .card a {
+        padding: 0.7rem 1.2rem;
+        font-size: 0.85rem;
+        margin-top: 1.2rem;
+    }
+}
+
+/* Móviles pequeños (400px y menos) */
+@media screen and (max-width: 400px) {
+    .card {
+        padding: 1.5rem 1rem;
+        max-width: 300px;
+        border-radius: 12px;
+    }
+
+    .card h1 {
+        font-size: 1.4rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .card h1::after {
+        right: -18px;
+        font-size: 0.9rem;
+    }
+
+    .card p {
+        font-size: 0.85rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .card .timer {
+        font-size: 1rem;
+        padding: 0.1rem 0.3rem;
+    }
+
+    .card a {
+        padding: 0.6rem 1rem;
+        font-size: 0.8rem;
+        margin-top: 1rem;
+    }
+}
+
+/* Móviles muy pequeños (320px y menos) */
+@media screen and (max-width: 320px) {
+    .card {
+        padding: 1.2rem 0.8rem;
+        max-width: 280px;
+    }
+
+    .card h1 {
+        font-size: 1.2rem;
+    }
+
+    .card h1::after {
+        right: -15px;
+        font-size: 0.8rem;
+    }
+
+    .card p {
+        font-size: 0.8rem;
+    }
+
+    .card .timer {
+        font-size: 0.95rem;
+    }
+
+    .card a {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* ======== MEJORAS DE ACCESIBILIDAD ======== */
+
+/* Reducir animaciones si el usuario lo prefiere */
+@media (prefers-reduced-motion: reduce) {
+
+    .card,
+    .card h1,
+    .card h1::after,
+    .card .timer,
+    .card a,
+    .card p {
+        animation: none;
+    }
+
+    .card a::before {
+        display: none;
+    }
+
+    .card,
+    .card a {
+        transition: none;
+    }
+}
+
+/* Modo de alto contraste */
+@media (prefers-contrast: high) {
+    .card {
+        border: 2px solid #000;
+        background: #fff;
+    }
+
+    .card h1,
+    .card .timer {
+        color: var(--error-dark);
+        -webkit-text-fill-color: var(--error-dark);
+    }
+
+    .card a {
+        border: 2px solid #000;
+    }
+}
+
+/* ======== ESTADOS DE FOCUS PARA ACCESIBILIDAD ======== */
+.card a:focus {
+    outline: 3px solid rgba(52, 152, 219, 0.5);
+    outline-offset: 2px;
+}
+
+/* ======== OPTIMIZACIÓN PARA PANTALLAS DE ALTA DENSIDAD ======== */
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+    .card h1::after {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* ======== MEJORAS ADICIONALES ======== */
+
+/* Hover mejorado para dispositivos táctiles */
+@media (hover: hover) {
+    .card:hover {
+        transform: translateY(-5px);
+    }
+}
+
+/* Estado de carga */
+.card.loading {
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+/* Efecto de respiración para el timer cuando está activo */
+.card .timer.active {
+    animation: timerPulse 0.8s ease-in-out infinite;
+}
+
+/* Mejora visual para el enlace en estado activo */
+.card a.active {
+    background: linear-gradient(135deg, #1f5f8b 0%, #154a6b 100%);
+}

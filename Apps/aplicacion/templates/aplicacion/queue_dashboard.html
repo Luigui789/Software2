@@ -14,7 +14,6 @@
     {% for barber_data in queue_data %}
     <div class="quadrant" data-barber-id="{{ barber_data.barber_id }}">
         <h2>Barbero: {{ barber_data.barber_name }}</h2>
-        <img src="{% static 'image/bellako.jpg' %}" alt="{{ barber_data.barber_name }}" class="barber-photo">
         <div class="queue-info">
             <h3>Número Actual: <span class="current-queue-number">{{ barber_data.current_number }}</span></h3>
         </div>

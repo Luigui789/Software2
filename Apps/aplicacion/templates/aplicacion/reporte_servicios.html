@@ -5,97 +5,126 @@
 <link rel="stylesheet" href="{% static 'css/Style2.css' %}">
 <link rel="stylesheet" href="{% static 'css/Reporte.css' %}">
 <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-
 {% endblock %}
+
 {% block content %}
+<div class="reporte-container">
+    <!-- Formulario de filtros -->
+    <div class="filtro-section">
+        <form method="get" class="filtro-form">
+            <div class="filtro-row">
+                <label for="filtro">Filtrar por:</label>
+                <select name="filtro" id="filtro" onchange="this.form.submit()">
+                    <option value="" {% if not filtro %}selected{% endif %}>-- Todos --</option>
+                    <option value="hoy" {% if filtro == 'hoy' %}selected{% endif %}>Hoy</option>
+                    <option value="semana" {% if filtro == 'semana' %}selected{% endif %}>Esta semana</option>
+                    <option value="mes" {% if filtro == 'mes' %}selected{% endif %}>Este mes</option>
+                    <option value="rango" {% if filtro == 'rango' %}selected{% endif %}>Rango personalizado</option>
+                </select>
+            </div>
 
-<form method="get" class="filtro-form">
-    <label for="filtro">Filtrar por:</label>
+            {% if filtro == 'rango' %}
+            <div class="filtro-row rango-inputs">
+                <div class="date-group">
+                    <label for="inicio">Desde:</label>
+                    <input type="date" name="inicio" value="{{ inicio }}">
+                </div>
+                <div class="date-group">
+                    <label for="fin">Hasta:</label>
+                    <input type="date" name="fin" value="{{ fin }}">
+                </div>
+                <button type="submit" class="btn-filtrar">Filtrar</button>
+            </div>
+            {% endif %}
+        </form>
 
-    <select name="filtro" id="filtro" onchange="this.form.submit()">
-        <option value="" {% if not filtro %}selected{% endif %}>-- Todos --</option>
-        <option value="hoy" {% if filtro == 'hoy' %}selected{% endif %}>Hoy</option>
-        <option value="semana" {% if filtro == 'semana' %}selected{% endif %}>Esta semana</option>
-        <option value="mes" {% if filtro == 'mes' %}selected{% endif %}>Este mes</option>
-        <option value="rango" {% if filtro == 'rango' %}selected{% endif %}>Rango personalizado</option>
-    </select>
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
 
-    {% if filtro == 'rango' %}
-    <label for="inicio">Desde:</label>
-    <input type="date" name="inicio" value="{{ inicio }}">
+    <!-- Título -->
+    <h1>Reporte de Servicios Realizados</h1>
 
-    <label for="fin">Hasta:</label>
-    <input type="date" name="fin" value="{{ fin }}">
+    <!-- Botones de descarga -->
+    <div class="report-buttons-container">
+        <a href="{% url 'aplicacion:descargar_reporte_pdf' %}?filtro={{ filtro }}{% if inicio %}&inicio={{ inicio }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}"
+            target="_blank" class="btn-link">
+            <button class="btn-pdf">
+                <i class='bx bxs-file-pdf'></i>
+                <span>Descargar PDF</span>
+            </button> 
+        </a>
 
-    <button type="submit">Filtrar</button>
-    {% endif %}
-    {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li class="{% if message.tags %}{{ message.tags }}{% endif %}">
-            {{ message }}
-        </li>
-    </ul>
-    {% endfor %}
-    {% endif %}
-</form>
+        <a href="{% url 'aplicacion:descargar_reporte_excel' %}?filtro={{ filtro }}{% if inicio %}&inicio={{ inicio }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}"
+            target="_blank" class="btn-link">
+            <button class="btn-excel">
+                <i class='bx bxs-file-doc'></i>
+                <span>Descargar Excel</span>
+            </button>
+        </a>
 
-<h1>Reporte de Servicios Realizados</h1>
+        <form method="POST" action="{% url 'aplicacion:enviar_reporte_excel_whatsapp' %}" class="whatsapp-form">
+            {% csrf_token %}
+            <input type="hidden" name="numero" value="+50577027337">
+            <input type="hidden" name="filtro" value="{{ filtro }}">
+            <button type="submit" class="btn-whatsapp">
+                <i class='bx bxl-whatsapp'></i>
+                <span>Enviar por WhatsApp</span>
+            </button> 
+        </form>
+    </div>
 
-<div class="report-buttons-container">
-    <a href="{% url 'aplicacion:descargar_reporte_pdf' %}?filtro={{ filtro }}{% if inicio %}&inicio={{ inicio }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}"
-        target="_blank">
-        <button class="btn-pdf">📄 Descargar PDF</button> 
-    </a>
-
-    <a href="{% url 'aplicacion:descargar_reporte_excel' %}?filtro={{ filtro }}{% if inicio %}&inicio={{ inicio }}{% endif %}{% if fin %}&fin={{ fin }}{% endif %}"
-        target="_blank">
-        <button class="btn-excel">📊 Descargar Excel</button>
-    </a>
-
-    <form method="POST" action="{% url 'aplicacion:enviar_reporte_excel_whatsapp' %}">
-        {% csrf_token %}
-        <input type="hidden" name="numero" value="+50577027337"> <input type="hidden" name="filtro" value="{{ filtro }}">
-        <button type="submit" class="btn-whatsapp"><i class='bx bxl-whatsapp'></i>Enviar Excel por WhatsApp</button> 
-    </form>
+    <!-- Tabla responsive -->
+    <div class="table-section">
+        <div class="table-wrapper">
+            <table class="servicios-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Barbero</th>
+                        <th>Servicios</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for servicio in servicios %}
+                    <tr>
+                        <td data-label="ID">{{ servicio.id }}</td>
+                        <td data-label="Fecha">{{ servicio.fecha }}</td>
+                        <td data-label="Cliente">{{ servicio.cliente.nombre1 }} {{ servicio.cliente.apellidoP }}</td>
+                        <td data-label="Barbero">{{ servicio.barbero.Empleado.persona.nombre1 }} {{ servicio.barbero.Empleado.persona.apellidoP }}</td>
+                        <td data-label="Servicios">
+                            <div class="servicios-list">
+                                {% for detalle in servicio.detalle.all %}
+                                <span class="servicio-item">{{ detalle.Servicio.nombre }}</span>{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td data-label="Total" class="precio">${{ servicio.precio_total }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr class="empty-row">
+                        <td colspan="6">
+                            <div class="empty-message">
+                                <i class='bx bx-info-circle'></i>
+                                <span>No hay servicios realizados</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
-<br>
-<br>
-
-
-
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Fecha</th>
-            <th>Cliente</th>
-            <th>Barbero</th>
-            <th>Servicios</th>
-            <th>Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for servicio in servicios %}
-        <tr>
-            <td>{{ servicio.id }}</td>
-            <td>{{ servicio.fecha }}</td>
-            <td>{{ servicio.cliente.nombre1 }} {{ servicio.cliente.apellidoP }}</td>
-            <td>{{ servicio.barbero.Empleado.persona.nombre1 }} {{ servicio.barbero.Empleado.persona.apellidoP }}</td>
-            <td>
-                {% for detalle in servicio.detalle.all %}
-                {{ detalle.Servicio.nombre }}{% if not forloop.last %}, {% endif %}
-                {% endfor %}
-            </td>
-            <td>${{ servicio.precio_total }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="6">No hay servicios realizados</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
 {% endblock %}
+

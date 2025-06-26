@@ -3,9 +3,9 @@
 <html lang="en">
 
 <head>
-    {% block head %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block head %}
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/Style.css' %}">
     <title>{% block title %} {% endblock %}</title>
@@ -16,7 +16,7 @@
     <!-- Barra de navegacion -->
     <nav class="navbar">
         <div class="navbar-logo">
-            <img src="{% static 'image/logo.jpg' %}" alt="Logo" />
+            <img src="{% static 'image/logo.png' %}" alt="Logo" />
         </div>
         <input type="checkbox" id="navbar-toggle" class="navbar-toggle">
         <label for="navbar-toggle" class="navbar-icon">&#9776;</label>

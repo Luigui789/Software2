@@ -741,6 +741,7 @@ def AdminCliente(request):
             apellidoM=apellidoM,
             instagram=instagram,
             correo=correo
+            
         )
         messages.success(request, 'Cliente agregado exitosamente!') # Mensaje de éxito
         return redirect('aplicacion:AdCliente')

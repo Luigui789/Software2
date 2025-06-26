@@ -14,7 +14,7 @@
         <div class="barber-selection-container">
             {% for barber_data in barberos_data %}
             <div class="barber-card" data-barber-id="{{ barber_data.barber_id }}">
-                <img src="{% static 'image/barber_placeholder.jpg' %}" alt="{{ barber_data.barber_name }}">
+                <img src="{% static 'image/unicornio.png' %}" alt="{{ barber_data.barber_name }}">
                 <h2>{{ barber_data.barber_name }}</h2>
                 <p>Turno actual: <strong class="numeroActual" style="color: red;">{{ barber_data.current_number }}</strong> </p>
                 <button class="select-barber-button">Seleccionar</button>

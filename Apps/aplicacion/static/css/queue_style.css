@@ -1,100 +1,650 @@
-/* Apps/aplicacion/static/css/queue_style.css */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
-    color: #333;
+/* ======== VARIABLES CSS ======== */
+:root {
+    --primary-color: #835527;
+    --secondary-color: #9e754a;
+    --accent-color: #ae7435;
+    --success-color: #28a745;
+    --error-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #007bff;
+    --background-light: #f8f9fa;
+    --background-medium: #b3b1a9;
+    --background-dark: #978870;
+    --text-dark: #40270e;
+    --text-light: #fff;
+    --text-muted: #6c757d;
+    --border-radius: 15px;
+    --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 8px 20px rgba(0, 0, 0, 0.15);
+    --shadow-heavy: 0 12px 30px rgba(0, 0, 0, 0.2);
+    --transition: all 0.3s ease;
 }
 
+/* ======== RESET Y ESTILOS BASE ======== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Space Grotesk", sans-serif;
+    background: linear-gradient(135deg, var(--background-light) 0%, #e9ecef 100%);
+    margin: 0;
+    padding: 2rem 1rem;
+    color: var(--text-dark);
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+/* ======== TÍTULO PRINCIPAL ======== */
 h1 {
     text-align: center;
-    color: #0056b3;
-    margin-bottom: 40px;
+    color: var(--primary-color);
+    margin: 0 0 3rem 0;
+    font-size: 2.8rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
 }
 
+h1::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    border-radius: 2px;
+}
+
+/* ======== CONTENEDOR PRINCIPAL ======== */
 .quadrants-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    max-width: 1200px;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    max-width: 1400px;
     margin: 0 auto;
+    padding: 0 1rem;
 }
 
+/* ======== TARJETAS DE BARBEROS ======== */
 .quadrant {
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 25px;
+    background: linear-gradient(135deg, #fff 0%, #fafafa 100%);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    padding: 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
+    transition: var(--transition);
+    border: 1px solid rgba(131, 85, 39, 0.1);
+    position: relative;
+    overflow: hidden;
 }
 
+.quadrant::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+}
+
+.quadrant:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-medium);
+    border-color: var(--primary-color);
+}
+
+/* ======== TÍTULO DEL BARBERO ======== */
 .quadrant h2 {
-    color: #007bff;
-    margin-bottom: 15px;
+    color: var(--primary-color);
+    margin: 0 0 1.5rem 0;
+    font-size: 1.6rem;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 0.5rem;
 }
 
+.quadrant h2::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 2px;
+    background: var(--accent-color);
+    border-radius: 1px;
+}
+
+/* ======== FOTO DEL BARBERO ======== */
 .barber-photo {
-    width: 120px;
-    height: 120px;
+    width: 140px;
+    height: 140px;
     border-radius: 50%;
     object-fit: cover;
-    margin-bottom: 20px;
-    border: 3px solid #ddd;
+    margin-bottom: 1.5rem;
+    border: 4px solid var(--background-medium);
+    box-shadow: var(--shadow-light);
+    transition: var(--transition);
+    position: relative;
 }
 
+.barber-photo:hover {
+    transform: scale(1.05);
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-medium);
+}
+
+/* ======== INFORMACIÓN DE LA COLA ======== */
 .queue-info {
-    margin-bottom: 25px;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--background-light) 0%, #f1f3f4 100%);
+    border-radius: 12px;
+    width: 100%;
+    border: 2px solid rgba(131, 85, 39, 0.1);
+    position: relative;
+}
+
+.queue-info::before {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 0 10px;
+    font-size: 1.5rem;
 }
 
 .queue-info h3 {
-    font-size: 1.8em;
-    margin-bottom: 10px;
-    color: #555;
+    font-size: 1.4rem;
+    margin: 0 0 1rem 0;
+    color: var(--text-dark);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .current-queue-number {
-    font-size: 3.5em;
-    font-weight: bold;
-    color: #28a745; /* Verde para el número actual */
+    font-size: 4.5rem;
+    font-weight: 900;
+    color: var(--success-color);
     display: block;
-    margin-top: 5px;
+    margin-top: 0.5rem;
+    text-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+    position: relative;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
 }
 
 .your-assigned-number {
-    font-size: 1.2em;
-    color: #6c757d;
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+/* ======== BOTONES ======== */
+.next-button,
+.reset-button {
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    margin: 0.5rem 0;
+    width: 100%;
+    max-width: 250px;
+    box-shadow: var(--shadow-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.next-button::before,
+.reset-button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.next-button:hover::before,
+.reset-button:hover::before {
+    left: 100%;
 }
 
 .next-button {
-    background-color: #007bff;
+    background: linear-gradient(135deg, var(--info-color) 0%, #0056b3 100%);
     color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 5px;
-    font-size: 1.2em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    border: 2px solid transparent;
 }
 
 .next-button:hover {
-    background-color: #0056b3;
+    background: linear-gradient(135deg, #0056b3 0%, #004494 100%);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-medium);
+}
+
+.next-button:active {
+    transform: translateY(-1px);
 }
 
 .reset-button {
-    background-color: #d00f01;
+    background: linear-gradient(135deg, var(--error-color) 0%, #c82333 100%);
     color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 5px;
-    font-size: 1.2em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    border: 2px solid transparent;
 }
 
 .reset-button:hover {
-    background-color: #8a0000;
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-medium);
+}
+
+.reset-button:active {
+    transform: translateY(-1px);
+}
+
+/* ======== MENSAJE SIN PERMISOS ======== */
+.quadrant p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin: 1rem 0;
+    padding: 1rem;
+    background: rgba(108, 117, 125, 0.1);
+    border-radius: 8px;
+    border-left: 4px solid var(--text-muted);
+}
+
+/* ======== RESPONSIVE DESIGN ======== */
+
+/* Tablets grandes (1024px y menos) */
+@media screen and (max-width: 1024px) {
+    body {
+        padding: 1.5rem 0.8rem;
+    }
+
+    h1 {
+        font-size: 2.4rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .quadrants-container {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.8rem;
+        padding: 0 0.5rem;
+    }
+
+    .quadrant {
+        padding: 1.8rem;
+    }
+
+    .barber-photo {
+        width: 120px;
+        height: 120px;
+    }
+
+    .current-queue-number {
+        font-size: 4rem;
+    }
+}
+
+/* Tablets medianas (768px y menos) */
+@media screen and (max-width: 768px) {
+    body {
+        padding: 1rem 0.5rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .quadrants-container {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        padding: 0 0.3rem;
+    }
+
+    .quadrant {
+        padding: 1.5rem;
+    }
+
+    .quadrant h2 {
+        font-size: 1.4rem;
+    }
+
+    .barber-photo {
+        width: 100px;
+        height: 100px;
+        margin-bottom: 1rem;
+    }
+
+    .queue-info {
+        padding: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .queue-info h3 {
+        font-size: 1.2rem;
+    }
+
+    .current-queue-number {
+        font-size: 3.5rem;
+    }
+
+    .next-button,
+    .reset-button {
+        padding: 0.9rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* Móviles grandes (600px y menos) */
+@media screen and (max-width: 600px) {
+    body {
+        padding: 0.8rem 0.3rem;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .quadrants-container {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+        max-width: 500px;
+    }
+
+    .quadrant {
+        padding: 1.2rem;
+        margin: 0 0.2rem;
+    }
+
+    .quadrant h2 {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+
+    .barber-photo {
+        width: 90px;
+        height: 90px;
+        border-width: 3px;
+    }
+
+    .queue-info {
+        padding: 1rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .queue-info h3 {
+        font-size: 1.1rem;
+    }
+
+    .current-queue-number {
+        font-size: 3rem;
+    }
+
+    .next-button,
+    .reset-button {
+        padding: 0.8rem 1.2rem;
+        font-size: 0.95rem;
+        margin: 0.3rem 0;
+    }
+}
+
+/* Móviles medianos (480px y menos) */
+@media screen and (max-width: 480px) {
+    body {
+        padding: 0.5rem 0.2rem;
+    }
+
+    h1 {
+        font-size: 1.6rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .quadrants-container {
+        gap: 1rem;
+        max-width: 400px;
+    }
+
+    .quadrant {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+
+    .quadrant h2 {
+        font-size: 1.2rem;
+    }
+
+    .barber-photo {
+        width: 80px;
+        height: 80px;
+    }
+
+    .queue-info {
+        padding: 0.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .queue-info h3 {
+        font-size: 1rem;
+    }
+
+    .current-queue-number {
+        font-size: 2.5rem;
+    }
+
+    .next-button,
+    .reset-button {
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+        border-radius: 10px;
+    }
+
+    .quadrant p {
+        font-size: 1rem;
+        padding: 0.8rem;
+    }
+}
+
+/* Móviles pequeños (400px y menos) */
+@media screen and (max-width: 400px) {
+    body {
+        padding: 0.3rem 0.1rem;
+    }
+
+    h1 {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+    }
+
+    .quadrants-container {
+        gap: 0.8rem;
+        max-width: 350px;
+    }
+
+    .quadrant {
+        padding: 0.8rem;
+        border-radius: 10px;
+    }
+
+    .quadrant h2 {
+        font-size: 1.1rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .barber-photo {
+        width: 70px;
+        height: 70px;
+        border-width: 2px;
+    }
+
+    .queue-info {
+        padding: 0.6rem;
+        margin-bottom: 0.8rem;
+        border-radius: 8px;
+    }
+
+    .queue-info h3 {
+        font-size: 0.9rem;
+    }
+
+    .current-queue-number {
+        font-size: 2.2rem;
+    }
+
+    .next-button,
+    .reset-button {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        margin: 0.2rem 0;
+    }
+}
+
+/* Móviles muy pequeños (320px y menos) */
+@media screen and (max-width: 320px) {
+    h1 {
+        font-size: 1.2rem;
+    }
+
+    .quadrant {
+        padding: 0.6rem;
+    }
+
+    .quadrant h2 {
+        font-size: 1rem;
+    }
+
+    .barber-photo {
+        width: 60px;
+        height: 60px;
+    }
+
+    .current-queue-number {
+        font-size: 2rem;
+    }
+
+    .next-button,
+    .reset-button {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* ======== MEJORAS DE ACCESIBILIDAD ======== */
+
+/* Reducir animaciones si el usuario lo prefiere */
+@media (prefers-reduced-motion: reduce) {
+    .current-queue-number {
+        animation: none;
+    }
+
+    .quadrant,
+    .next-button,
+    .reset-button,
+    .barber-photo {
+        transition: none;
+    }
+
+    .next-button::before,
+    .reset-button::before {
+        display: none;
+    }
+}
+
+/* Modo de alto contraste */
+@media (prefers-contrast: high) {
+    .quadrant {
+        border: 2px solid #000;
+    }
+
+    .current-queue-number {
+        text-shadow: none;
+        font-weight: 900;
+    }
+
+    .next-button,
+    .reset-button {
+        border: 2px solid #000;
+    }
+}
+
+/* ======== ESTADOS DE FOCUS PARA ACCESIBILIDAD ======== */
+.next-button:focus,
+.reset-button:focus {
+    outline: 3px solid rgba(131, 85, 39, 0.5);
+    outline-offset: 2px;
+}
+
+/* ======== MEJORAS ADICIONALES ======== */
+
+/* Efecto de carga para números */
+.current-queue-number.updating {
+    animation: bounce 0.5s ease-in-out;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Indicador de estado activo */
+.quadrant.active::before {
+    background: linear-gradient(90deg, var(--success-color), #20c997);
+}
+
+/* Hover mejorado para dispositivos táctiles */
+@media (hover: hover) {
+    .quadrant:hover .barber-photo {
+        transform: scale(1.05);
+    }
+
+    .quadrant:hover .current-queue-number {
+        color: var(--primary-color);
+    }
+}
+
+/* Optimización para pantallas de alta densidad */
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+    .barber-photo {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
 }

@@ -8,7 +8,7 @@
 {% block content %}
 <main class="login-container">
     <div class="login-box">
-        <h1 class="logo">Mojica's <span>Barber Shop</span></h1>
+        <h1 class="logo">Mojica's Barber Shop</h1>
         <form action="{% url 'aplicacion:login' %}" method="post">
             {% csrf_token %}
             <input type="text" name="username" placeholder="USUARIO" class="input-field">
