@@ -32,3 +32,5 @@ mycreds.json
 dump.json
 google_service.json
 
+staticfiles/
+
