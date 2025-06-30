@@ -1,16 +1,14 @@
 /* ======== ESTILOS GENERALES ======== */
 body {
     background-color: #b3b1a9;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: "Space Grotesk", sans-serif;
     background: url("/static/image/background.png") center center no-repeat fixed;
     background-size: 400px;
-    /* O usa 'contain' para ajustarse al viewport */
     background-color: #cdcac1;
     background-blend-mode: normal;
     overflow-x: hidden;
     margin: 0;
     padding: 0;
-
 }
 
 /* ======== NAVBAR ======== */
@@ -19,13 +17,16 @@ body {
     align-items: center;
     justify-content: space-between;
     background: #835527;
-    /* Rojo fuerte */
     padding: 0.5rem 1rem;
     position: relative;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .navbar-logo img {
     height: 40px;
+    width: auto;
+    max-width: 100%;
 }
 
 .navbar-links {
@@ -33,6 +34,7 @@ body {
     list-style: none;
     margin: 0;
     padding: 0;
+    flex-wrap: wrap;
 }
 
 .navbar-links li {
@@ -45,8 +47,10 @@ body {
     font-weight: bold;
     padding: 0.5rem 1rem;
     border-radius: 5px;
-    font-size: 15px;
     transition: background 0.2s;
+    font-size: 15px;
+    display: block;
+    white-space: nowrap;
 }
 
 .navbar-links a:hover {
@@ -59,21 +63,67 @@ body {
 }
 
 /* ======== NAVBAR RESPONSIVE ======== */
-@media (max-width: 800px) {
-    .navbar-links {
-        flex-direction: column;
-        position: absolute;
-        top: 60px;
-        left: 0;
-        right: 0;
-        background: #835527;
-        /* Mantener rojo fuerte también en móvil */
-        display: none;
+
+/* Tablets y pantallas medianas */
+@media (max-width: 1024px) {
+    .navbar-links a {
+        font-size: 14px;
+        padding: 0.4rem 0.8rem;
     }
 
     .navbar-links li {
-        margin: 1rem 0;
+        margin: 0 0.3rem;
+    }
+}
+
+/* Tablets pequeñas */
+@media (max-width: 900px) {
+    .navbar-links a {
+        font-size: 13px;
+        padding: 0.3rem 0.6rem;
+    }
+
+    .navbar-links li {
+        margin: 0 0.2rem;
+    }
+}
+
+/* MÓVILES - MENÚ HAMBURGUESA */
+@media (max-width: 800px) {
+    .navbar {
+        padding: 0.8rem 1rem;
+    }
+
+    .navbar-links {
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #835527;
+        display: none;
+        z-index: 1000;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        border-radius: 0 0 10px 10px;
+    }
+
+    .navbar-links li {
+        margin: 0;
         text-align: center;
+        width: 100%;
+        border-bottom: 1px solid #513518;
+    }
+
+    .navbar-links li:last-child {
+        border-bottom: none;
+    }
+
+    .navbar-links a {
+        width: 100%;
+        padding: 1.2rem;
+        font-size: 16px;
+        border-radius: 0;
+        display: block;
     }
 
     .navbar-toggle:checked+.navbar-icon+.navbar-links {
@@ -82,9 +132,67 @@ body {
 
     .navbar-icon {
         display: block;
-        font-size: 2rem;
-        color: #513518;
+        font-size: 1.8rem;
+        color: #fff;
         cursor: pointer;
         margin-left: auto;
+        padding: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .navbar-icon:hover {
+        color: #cdcac1;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+    .navbar {
+        padding: 0.6rem 0.8rem;
+    }
+
+    .navbar-logo img {
+        height: 35px;
+    }
+
+    .navbar-icon {
+        font-size: 1.6rem;
+    }
+}
+
+
+/* ======== FOOTER RESPONSIVE ======== */
+
+
+/* Móviles muy pequeños */
+@media (max-width: 320px) {
+    .navbar {
+        padding: 0.4rem 0.5rem;
+    }
+
+    .navbar-logo img {
+        height: 30px;
+    }
+
+}
+
+/* ======== MEJORAS DE ACCESIBILIDAD ======== */
+
+/* Ajustes para background en dispositivos móviles */
+@media (max-width: 768px) {
+    body {
+        background-size: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        background-size: 250px;
+    }
+}
+
+@media (max-width: 320px) {
+    body {
+        background-size: 200px;
     }
 }

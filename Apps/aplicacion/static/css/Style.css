@@ -282,7 +282,7 @@ body {
 /* Tablets medianas */
 @media (max-width: 768px) {
     .footer {
-        margin: 1rem 0.5rem 0 0.5rem;
+        margin: 1rem 0.5rem 0 1.1rem;
         padding: 1.8rem;
         border-radius: 15px 15px 0 0;
     }
@@ -322,7 +322,7 @@ body {
 /* Móviles grandes */
 @media (max-width: 600px) {
     .footer {
-        margin: 1rem 0.3rem 0 0.3rem;
+        margin: 1rem 0.3rem 0 1rem;
         padding: 1.5rem;
     }
 
@@ -359,7 +359,7 @@ body {
 /* Móviles medianos */
 @media (max-width: 480px) {
     .footer {
-        margin: 0.8rem 0.2rem 0 0.2rem;
+        margin: 0.8rem 0.2rem 0 1.2rem;
         padding: 1.2rem;
         border-radius: 12px 12px 0 0;
     }
@@ -435,7 +435,7 @@ body {
 
     .footer {
         padding: 0.8rem;
-        margin: 0.3rem 0.05rem 0 0.05rem;
+        margin: 0.3rem 0.05rem 0 1.05rem;
     }
 
     .footer-content {

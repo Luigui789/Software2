@@ -121,45 +121,70 @@ h1 {
     font-weight: 500;
 }
 
-/* ======== BOTONES DE REPORTE ======== */
+/* ======== BOTONES DE REPORTE - VERSIÓN MÓVIL OPTIMIZADA ======== */
 .report-buttons-container {
-    display: flex !important;
-    justify-content: center;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 0.8rem;
-    margin: 2rem 0;
-    flex-wrap: nowrap;
-    flex-direction: row !important;
+    margin: 1.5rem 0;
+    width: 100%;
+    padding: 0 1rem;
 }
 
 .btn-link {
     text-decoration: none;
-    flex: 1;
-    max-width: 150px;
+    width: 100%;
+    max-width: 280px;
 }
 
 .whatsapp-form {
     margin: 0;
-    flex: 1;
-    max-width: 150px;
+    width: 100%;
+    max-width: 280px;
 }
 
 .report-buttons-container button {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.3rem;
-    padding: 0.8rem 0.5rem;
+    gap: 0.8rem;
+    padding: 1rem 1.5rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 1rem;
     font-weight: bold;
     color: white;
     transition: all 0.3s ease;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     width: 100%;
-    min-height: 50px;
+    min-height: 56px;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.report-buttons-container button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.report-buttons-container button:active {
+    transform: translateY(0);
+}
+
+/* Iconos de los botones */
+.report-buttons-container button i {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+/* Texto de los botones */
+.report-buttons-container button span {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
 }
 
 /* ======== TABLA ======== */
@@ -263,6 +288,27 @@ h1 {
 
 /* ======== RESPONSIVE DESIGN ======== */
 
+/* Desktop y tablets grandes */
+@media screen and (min-width: 769px) {
+    .report-buttons-container {
+        flex-direction: row;
+        justify-content: center;
+        gap: 1.5rem;
+        padding: 0;
+    }
+
+    .btn-link,
+    .whatsapp-form {
+        flex: 1;
+        max-width: 200px;
+    }
+
+    .report-buttons-container button {
+        min-height: 50px;
+        padding: 1rem 1.5rem;
+    }
+}
+
 /* Tablets grandes */
 @media screen and (max-width: 1024px) {
     .reporte-container {
@@ -271,15 +317,6 @@ h1 {
 
     h1 {
         font-size: 2.2rem;
-    }
-
-    .report-buttons-container {
-        gap: 1rem;
-    }
-
-    .report-buttons-container button {
-        min-width: 160px;
-        padding: 0.9rem 1.2rem;
     }
 }
 
@@ -316,17 +353,6 @@ h1 {
         gap: 0.5rem;
     }
 
-    /* Botones responsive */
-    .report-buttons-container {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .report-buttons-container button {
-        width: 100%;
-        max-width: 300px;
-    }
-
     /* Tabla móvil */
     .servicios-table {
         font-size: 0.9rem;
@@ -360,19 +386,6 @@ h1 {
     .filtro-form input[type="date"] {
         padding: 0.7rem;
         font-size: 0.9rem;
-    }
-
-    /* Mantener botones horizontales SIEMPRE */
-    .report-buttons-container {
-        flex-direction: row !important;
-        gap: 0.5rem;
-        margin: 1.5rem 0;
-    }
-
-    .report-buttons-container button {
-        padding: 0.7rem 0.4rem;
-        font-size: 0.75rem;
-        min-height: 45px;
     }
 
     /* Tabla card style con colores originales */
@@ -529,7 +542,7 @@ h1 {
 /* Móviles pequeños */
 @media screen and (max-width: 480px) {
     .reporte-container {
-        padding: 0.3rem;
+        padding: 0.5rem;
     }
 
     h1 {
@@ -538,53 +551,74 @@ h1 {
     }
 
     .filtro-form {
-        padding: 0.6rem;
+        padding: 0.8rem;
     }
+    .report-buttons-container {
+        gap: 0.5rem;
+        padding: 0 0.3rem;
+    }
+
 
     .report-buttons-container button {
         padding: 0.8rem 1rem;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        min-height: 50px;
+        gap: 0.6rem;
     }
 
+    .report-buttons-container button i {
+        font-size: 1.1rem;
+    }
+
+    .report-buttons-container button span {
+        font-size: 0.85rem;
+    }
+
+
     .servicios-table tbody tr {
-        padding: 0.8rem;
+        margin-bottom: 1.2rem;
     }
 
     .servicios-table td {
-        padding: 0.4rem 0;
+        padding: 0.8rem 1.2rem;
         font-size: 0.9rem;
     }
 }
 
 /* Móviles muy pequeños */
 @media screen and (max-width: 400px) {
+    .reporte-container {
+        padding: 0.3rem;
+    }
+
     h1 {
         font-size: 1.4rem;
     }
 
     .report-buttons-container {
-        flex-direction: row !important;
-        gap: 0.3rem;
+        gap: 0.5rem;
+        padding: 0 0.3rem;
     }
+
 
     .report-buttons-container button {
-        padding: 0.8rem 0.3rem;
-        font-size: 0.7rem;
-        min-width: auto;
-        flex: 1;
-    }
-
-    .report-buttons-container button span {
-        font-size: 0.65rem;
-        line-height: 1.1;
+        padding: 0.8rem 1rem;
+        font-size: 0.85rem;
+        min-height: 50px;
+        gap: 0.6rem;
     }
 
     .report-buttons-container button i {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
+    }
+
+    .report-buttons-container button span {
+        font-size: 0.85rem;
     }
 
     .servicios-table td {
         font-size: 0.85rem;
+        padding: 0.7rem 1rem;
     }
 }
 
@@ -598,33 +632,66 @@ h1 {
     }
 }
 
+/* Modo de alto contraste */
+@media (prefers-contrast: high) {
+    .servicios-table th {
+        background-color: #000;
+        color: #fff;
+    }
+
+    .servicios-table td {
+        border: 1px solid #000;
+    }
+
+    .report-buttons-container button {
+        border: 2px solid #fff;
+    }
+}
+
+/* ======== COLORES DE BOTONES ======== */
 
 /* Botón PDF */
 .btn-pdf {
-    background-color: #dc3545;
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
 }
 
 .btn-pdf:hover {
-    background-color: #c82333;
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
 }
 
 /* Botón Excel */
 .btn-excel {
-    background-color: #28a745;
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
 }
 
 .btn-excel:hover {
-    background-color: #218838;
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
 }
 
 /* Botón WhatsApp */
 .btn-whatsapp {
-    background-color: #25d366;
+    background: linear-gradient(135deg, #25d366 0%, #1da851 100%);
 }
 
 .btn-whatsapp:hover {
-    background-color: #1da851;
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, #1da851 0%, #17a2b8 100%);
+}
+
+/* Landscape móviles */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .report-buttons-container {
+        margin: 0.8rem 0;
+        gap: 0.6rem;
+    }
+
+    .report-buttons-container button {
+        min-height: 44px;
+        padding: 0.7rem 1.2rem;
+        font-size: 0.9rem;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+        margin: 0.8rem 0;
+    }
 }
