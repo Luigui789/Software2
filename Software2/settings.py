@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure--+*p=wvy&gz1vq_wpr0zbfg9+h3xh^&38-m0x48ejt8tulyv7=')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 CSRF_TRUSTED_ORIGINS = [
     'https://mojicasbarbershop.onrender.com',
@@ -171,53 +171,53 @@ AXES_LOCKOUT_TEMPLATE = 'aplicacion/login_bloqueado.html'  # plantilla personali
 AXES_FAILURE_LIMIT_BY_USERNAME = True # Para lograr el mismo comportamiento recomendado
 
 # Twilio Render Configuración
-# TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
-# TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
-# TWILIO_WHATSAPP_NUMBER = os.environ.get('TWILIO_WHATSAPP_NUMBER')
-# TWILIO_TEMPLATE_SID = os.environ.get('TWILIO_TEMPLATE_SID', default='')
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
+TWILIO_WHATSAPP_NUMBER = os.environ.get('TWILIO_WHATSAPP_NUMBER')
+TWILIO_TEMPLATE_SID = os.environ.get('TWILIO_TEMPLATE_SID', default='')
 
 # Local configuracion
-TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN')
-TWILIO_WHATSAPP_NUMBER = config('TWILIO_WHATSAPP_NUMBER')
-TWILIO_TEMPLATE_SID = config('TWILIO_TEMPLATE_SID', default='')
+# TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID')
+# TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN')
+# TWILIO_WHATSAPP_NUMBER = config('TWILIO_WHATSAPP_NUMBER')
+# TWILIO_TEMPLATE_SID = config('TWILIO_TEMPLATE_SID', default='')
 
 ASGI_APPLICATION = 'Software2.asgi.application'
 
-CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels.layers.InMemoryChannelLayer"
-        }
-    }
-
-
-# Configuración de Redis para producción
-# if not DEBUG:
-#     CHANNEL_LAYERS = {
-#         "default": {
-#             "BACKEND": "channels_redis.core.RedisChannelLayer",
-#             "CONFIG": {
-#                 "hosts": [os.environ.get("REDIS_URL")],
-#             },
-#         },
-#     }
-# else:
-#     CHANNEL_LAYERS = {
+# CHANNEL_LAYERS = {
 #         "default": {
 #             "BACKEND": "channels.layers.InMemoryChannelLayer"
 #         }
 #     }
 
-# if not DEBUG:
-#     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-#     SECURE_SSL_REDIRECT = True
-#     SESSION_COOKIE_SECURE = True
-#     CSRF_COOKIE_SECURE = True
-#     SECURE_BROWSER_XSS_FILTER = True
-#     SECURE_CONTENT_TYPE_NOSNIFF = True
-#     SECURE_HSTS_SECONDS = 31536000  # 1 year
-#     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-#     SECURE_HSTS_PRELOAD = True
+
+# Configuración de Redis para producción
+if not DEBUG:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [os.environ.get("REDIS_URL")],
+            },
+        },
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
+        }
+    }
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
 
 

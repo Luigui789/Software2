@@ -47,7 +47,7 @@
                     <label>
                         <i class='bx bxs-rename'></i>
                         <select name="Barbero" required>
-                            <option value="">Seleccione un barbero</option>
+                            <option value="Seleccione un barbero"></option>
                             {% for barbero in barberos %}
                                 <option value="{{ barbero.id }}" {% if datos.Barbero|default:'' == barbero.id|stringformat:"s" %}selected{% endif %}>{{ barbero.Empleado.persona.nombre1 }} {{ barbero.Empleado.persona.apellidoP }}</option>
                             {% endfor %}
@@ -55,7 +55,7 @@
                     </label>
                     <label>
                     <select name="Servicio" multiple required>
-                        <option value="">Seleccione uno o más servicios</option>
+                        <option value="" disabled selected>Seleccione uno o más servicios</option>
                         {% for servicio in servicios %}
                         <option value="{{ servicio.id }}"{% if servicio.id|stringformat:"s" in servicios_seleccionados %}selected{% endif %}>{{ servicio.nombre }}</option>
                         {% endfor %}
